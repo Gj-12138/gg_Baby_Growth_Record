@@ -1,0 +1,23 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+    删除
+{% endblock %}
+
+{% block body %}
+<div style="width: 600px">
+<table>
+    <tr>
+        <td>
+            <!-- 删除表单 -->
+            <form method="post" action="{% url 'main:article_delete' articles.id %}" style="display:inline;"
+                onsubmit="return confirm('确定要删除 {{ articles.title }} 吗？');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-danger">删除</button>
+
+            </form>
+        </td>
+    </tr>
+</table>
+</div>
+{% endblock %}

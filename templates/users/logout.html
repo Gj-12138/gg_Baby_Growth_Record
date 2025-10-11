@@ -1,0 +1,28 @@
+
+{% extends 'base/base.html' %}
+
+{% block title %}
+    注册
+{% endblock %}
+
+{% block body %}
+
+<div style="width: 600px">
+    <h3>退出登录</h3>
+    <a href="{% url 'users:login' %}"><button type="button">退出登录</button></a>
+</div>
+{% if login_form.errors %}
+      <script>
+        // 将错误文本合并成一句
+        const errList = [
+          {% for field, errs in login_form.errors.items %}
+            {% for e in errs %}
+              "{{ e|escapejs }}",
+            {% endfor %}
+          {% endfor %}
+        ];
+        alert("提交失败！\n" + errList.join("\n"));
+      </script>
+    {% endif %}
+
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+    首页
+{% endblock %}
+
+{% block body %}
+
+    <h1>这是首页</h1>
+    <a href="{% url 'users:logout' %}"><button type="button">退出登录</button></a>
+    <a href="{% url 'users:usercenter' %}"><button type="button">用户中心</button></a>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base/base.html' %}
+
+{% block title %}详情{% endblock %}
+
+{% block body %}
+<div class="container" style="margin-top: 30px;">
+    <!-- 页头 -->
+    <div class="page-header">
+        <h2>标题：{{ object.title }}</h2>
+    </div>
+
+    <!-- 主卡片 -->
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+             正文内容
+        </div>
+        <div class="panel-body">
+            {{ object.content|safe }}
+        </div>
+        <div class="panel-footer text-right">
+            <a href="javascript:history.back();" class="btn btn-default btn-sm">
+                 返回
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

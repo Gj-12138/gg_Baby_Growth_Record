@@ -1,0 +1,95 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+    用户中心
+{% endblock %}
+{% block style %}
+    <style>
+        #usercenterform input{
+
+        }
+        #headerimg{
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid  lightgray;
+            background: url("/media/{{ request.user.avatar }}") no-repeat center;
+            background-size: cover;
+            padding-bottom: 20px;
+            {#background-image: url("");#}
+        }
+        #headerimg input{
+            display: block;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+        }
+    </style>
+{% endblock %}
+{% block script %}
+    <script>
+        window.onload = function (){
+            let change_btn = document.querySelector("#usercenterform>button");
+            change_btn.disabled = true;
+            change_btn.cursor = 'not-allowed';
+
+
+            let head_input = document.querySelector("#headerimg input");
+            let head = document.querySelector("#headerimg")
+            head_input.onchange = function (){
+                const filrReader = new FileReader()
+                filrReader.onload = function (e){
+                    console.log(e.target.result);
+                    head.style.backgroundImage = `url(${e.target.result})`;
+                }
+                filrReader.readAsDataURL(this.files[0]);
+
+                change_btn.disabled = false;
+                change_btn.cursor = 'pointer';
+            }
+        }
+
+    </script>
+
+
+{% endblock %}
+
+{% block body %}
+    <div style="width: 600px">
+        <div class="row-md-8">
+              <div class="col-md-8  col-md-offset-12 ">
+                    <h3>欢迎{{ request.user.username }}，来到用户中心</h3>
+                    <form action="" method="post" id="usercenterform"  enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.headerimg.label_tag }}
+                        <div id="headerimg">
+                            {{ form.headerimg }}
+                        </div>
+                        <br>
+                        {{ form.username.label_tag }}
+                        {{ form.username }}
+                        <br>
+                        <button type="submit">保存</button>
+                        <a href="{% url 'main:index' %}"><button type="button">首页</button></a>
+                    </form>
+              </div>
+        </div>
+
+
+    </div>
+    {% if register_form.errors %}
+          <script>
+            // 将错误文本合并成一句
+            const errList = [
+              {% for field, errs in register_form.errors.items %}
+                {% for e in errs %}
+                  "{{ e|escapejs }}",
+                {% endfor %}
+              {% endfor %}
+            ];
+            alert("提交失败！\n" + errList.join("\n"));
+          </script>
+    {% endif %}
+
+
+{% endblock %}

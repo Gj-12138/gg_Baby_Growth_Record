@@ -1,0 +1,72 @@
+{% extends 'base/base.html' %}
+{% block body %}
+<h2>用户管理</h2>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>头像</th><th>用户名</th><th>邮箱</th><th>是否激活</th>
+      <th>加入时间</th><th>最后登录</th><th>操作</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for u in users %}
+    <tr>
+      <td><img src="{{ u.avatar.url }}" alt="" width="40" height="40" class="rounded-circle"></td>
+      <td>{{ u.username }}</td>
+      <td>{{ u.email|default:"-" }}</td>
+      <td>{{ u.is_active|yesno:"是,否" }}</td>
+      <td>{{ u.date_joined|date:"Y-m-d H:i" }}</td>
+      <td>{{ u.last_login|date:"Y-m-d H:i"|default:"-" }}</td>
+      <td>
+{#        <a class="btn btn-sm btn-warning" href="{% url 'user:update' u.pk %}">编辑</a>#}
+{#        <a class="btn btn-sm btn-danger" href="{% url 'user:delete' u.pk %}">删除</a>        #}
+          <a class="btn btn-sm btn-warning"  >恢复默认</a>
+          <a class="btn btn-sm btn-danger"  >删除</a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+
+</table>
+
+
+     {% if is_paginated %}
+    <nav style="text-align: center">
+      <ul class="pagination">
+        {% if page_obj.has_previous %}
+          <li class="page-item ">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">上一页</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link" >上一页</a>
+          </li>
+        {% endif %}
+        {% for page in paginator.page_range %}
+            {% if page == page_obj.number %}
+            	<li class="page-item disabled">
+                  <a class="page-link " href="?page={{ page }}">{{ page }}</a>
+                </li>
+            {% else %}
+                <li class="page-item active">
+                  <a class="page-link " href="?page={{ page }}">{{ page }}</a>
+                </li>
+            {% endif %}
+
+
+
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">下一页</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link" >下一页</a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+{% endblock %}
