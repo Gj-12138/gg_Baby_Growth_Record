@@ -9,13 +9,16 @@
         {% endblock %}
     </title>
     <link rel="stylesheet" href="{% static "/css/bootstrap.min.css" %}">
+
     {% block style %}
     {% endblock %}
 </head>
 <body>
     {% include "base/header.html" %}
+
     {% block body %}
     {% endblock %}
+
     <script src="{% static "/js/jquery-2.2.4.min.js" %}"> </script>
     <script src="{% static '/js/bootstrap.min.js' %}"> </script>
     {% block script %}

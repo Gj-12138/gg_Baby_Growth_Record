@@ -8,7 +8,7 @@ from main.models import Articles
 class ArticleForm(forms.ModelForm):
     class Meta:
         model = Articles
-        fields = ['title', 'content']
+        fields = ['title', 'content','tags','categorys']
         widgets = {
             'title': forms.TextInput(attrs={'class':'form-control'}),
             'content': CKEditorWidget(attrs={'class':'form-control'}),

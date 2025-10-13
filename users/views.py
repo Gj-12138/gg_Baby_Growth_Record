@@ -16,27 +16,32 @@ from utils.encryption_decryption import encryption, decryption
 from django.contrib.auth import login as lgi ,logout as lgo
 
 # Create your views here.
+@method_decorator(login_required(login_url="users:login"), name="dispatch")
 class BabyListView(ListView):
     model = Baby
     context_object_name = 'baby'
     template_name = 'users/baby.html'
     paginate_by = 5
 
+@method_decorator(login_required(login_url="users:login"), name="dispatch")
 class BabyInfoDetailView(DetailView):
     queryset = Baby.objects.all()
 
 
+@method_decorator(login_required(login_url="users:login"), name="dispatch")
 class BabyCreateView(CreateView):
     model = Baby
     form_class = BabyAddForm
     success_url = reverse_lazy('users:baby')
 
+@method_decorator(login_required(login_url="users:login"), name="dispatch")
 class BabyUpdateView(UpdateView):
     model = Baby
     form_class = BabyAddForm
     success_url = reverse_lazy('users:baby')
     template_name_suffix = "_update"
 
+@method_decorator(login_required(login_url="users:login"), name="dispatch")
 class BabyDeleteView(DeleteView):
     model = Baby
     success_url = reverse_lazy('users:baby')

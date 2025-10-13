@@ -1,6 +1,7 @@
 import uuid
 
 from ckeditor.fields import RichTextField
+from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
@@ -392,6 +393,9 @@ class Tag(models.Model):
     """  标签  """
     tag = models.CharField(verbose_name="标签名",max_length=15, unique=True)
 
+    def __str__(self):
+        return self.tag
+
     class Meta:
         verbose_name = "标签"
         verbose_name_plural = "标签"
@@ -456,7 +460,98 @@ class Articles(models.Model):
         verbose_name = "社区分享"
         verbose_name_plural = "社区分享"
 
+class Collect(models.Model):
+    user = models.ForeignKey(verbose_name="用户",to=User, on_delete=models.CASCADE)
+    article = models.ForeignKey(verbose_name="文章",to=Articles, on_delete=models.CASCADE)
+    create_time = models.DateTimeField(verbose_name='创建时间',auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} 收藏了 {self.article.title}"
+
+    class Meta:
+        ordering = ["-create_time"]
+        verbose_name = "收藏夹"
+        verbose_name_plural = "收藏夹"
+        unique_together = ("user", "article")
+
+class Link(models.Model):
+    user = models.ForeignKey(verbose_name="用户",to=User,on_delete=models.CASCADE)
+    article = models.ForeignKey(verbose_name="文章",to=Articles,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user.username}点赞了{self.article.title}"
+
+    class Meta:
+        verbose_name = "点赞"
+        verbose_name_plural = "点赞"
+        unique_together = ("user", "article")
 
 
 
 
+# article_comment
+
+
+
+class ArticleComments(models.Model):
+    """文章评论模型"""
+    #  用户外键：适配自定义用户模型，增加related_name便于反向查询
+    user = models.ForeignKey(
+        verbose_name="评论用户",
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="article_comments"  # 反向查询：用户.article_comments.all() 获取该用户所有评论
+    )
+
+    # 文章外键：增加related_name，便于通过文章查所有评论
+    article = models.ForeignKey(
+        verbose_name="关联文章",
+        to=Articles,
+        on_delete=models.CASCADE,
+        related_name="comments"  # 反向查询：文章.comments.all() 获取该文章所有评论
+    )
+
+    #  评论内容
+    content = models.TextField(
+        verbose_name="评论内容",
+        max_length=500,
+        null=False,
+        blank=False
+    )
+
+    # 时间字段
+    create_time = models.DateTimeField(
+        verbose_name="评论时间",
+        auto_now_add=True,
+        db_index=True
+    )
+
+
+    # 支持评论点赞、
+    like_count = models.PositiveIntegerField(
+        verbose_name="点赞数",
+        default=0,  # 默认0赞，无需手动初始化
+        db_index=True  # 优化“按点赞数排序”查询效率
+    )
+    # 软删除
+    is_deleted = models.BooleanField(
+        verbose_name="是否软删除",
+        default=False,
+        db_index=True  # 优化“筛选未删除评论”效率（如 queryset.filter(is_deleted=False)）
+    )
+
+    def __str__(self):
+        # 显示评论摘要，增加评论ID便于定位
+        content_summary = self.content[:20] + "..." if len(self.content) > 20 else self.content
+        return f"[{self.id}] {self.user.username} 评《{self.article.title}》：{content_summary}"
+
+    class Meta:
+        ordering = ["-create_time"]
+        verbose_name = "文章评论"
+        verbose_name_plural = "文章评论"
+        indexes = [
+            # 复合索引：优化“按文章+时间”查询（高频场景：查某文章的所有评论并按时间排序）
+            models.Index(fields=["article", "-create_time"]),
+            # 复合索引：优化“按用户+时间”查询（高频场景：查某用户的所有评论并按时间排序）
+            models.Index(fields=["user", "-create_time"]),
+        ]

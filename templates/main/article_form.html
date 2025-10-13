@@ -17,6 +17,15 @@
                 {{ form.content.label_tag }}
                 {{ form.content|safe }}
             </div>
+            <div class="form-group">
+                {{ form.tags.label_tag }}
+                {{ form.tags }}
+            </div>
+            <div class="form-group">
+                {{ form.categorys.label_tag }}
+                {{ form.categorys|safe }}
+            </div>
+
             <button type="submit" class="btn btn-success">提交</button>
             <a href="{% url 'users:baby' %}"><button type="button" class="btn">返回</button></a>
         </form>

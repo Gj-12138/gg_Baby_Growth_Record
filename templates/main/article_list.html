@@ -1,76 +1,204 @@
 {% extends 'base/base.html' %}
+{% load template_tags_filters %}
 
 {% block title %}
     文章
 {% endblock %}
+{% block style %}
+<style>
+
+    /* 统一内容预览样式，避免富文本格式混乱 */
+    .article-preview {
+        font-size: 13px;
+        color: #555;
+        line-height: 1.5;
+    }
+    .article-preview img {
+        max-width: 100%;
+        max-height: 180px;
+        height: auto;
+        margin: 8px 0;
+        border-radius: 4px;
+        border: 1px solid #eee;
+        object-fit: contain;
+    }
+    /* 搜索结果提示样式 */
+    .search-tip {
+        padding: 15px;
+        margin-bottom: 24px;
+        background-color: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+        border-radius: 4px;
+    }
+    /* 卡片hover效果，增强交互感 */
+    .panel-default {
+        transition: box-shadow 0.3s ease;
+    }
+    .panel-default:hover {
+        box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+    }
+    /* 阅读全文按钮样式 */
+    .read-more {
+        display: inline-block;
+        margin-top: 8px;
+        color: #0d6efd;
+        text-decoration: none;
+        font-size: 13px;
+    }
+    .read-more:hover {
+        color: #0a58ca;
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+
 
 {% block body %}
-    <div style="width: 600px">
-                <h3>婴儿</h3>
-<table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>标题</th><th>文章内容</th><th>创建时间</th><th>更新时间</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for article in articles %}
-    <tr>
-      <td>{{ article.title }}</td>
-      <td>{{ article.content|safe }}</td>
-      <td>{{ article.created_articles|date:"Y-m-d" }}</td>
-      <td>{{ article.updated_articles|date:"Y-m-d"|default:"---" }}</td>
-        <td>
-{#            <a class="btn btn-sm btn-warning" href="{% url 'main:article_detail' article.id %}" >详情页</a>#}
-            <a class="btn btn-sm btn-warning" href="{{ article.get_absolute_url }}" >详情页</a>
-            <a class="btn btn-sm btn-danger" href="{% url 'main:article_delete' article.id %}"  >删除</a>
-        </td>
-
-    </tr>
-  {% endfor %}
-  </tbody>
-
-
-</table>
-     <a class="btn btn-sm btn-warning" href="{% url 'main:article_form'%}"  >添加</a>
- {% if is_paginated %}
-    <nav style="text-align: center">
-      <ul class="pagination">
-        {% if page_obj.has_previous %}
-          <li class="page-item ">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">上一页</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <a class="page-link" >上一页</a>
-          </li>
+    <!-- 容器：限制宽度+居中，增加顶部间距 -->
+    <div class="container" style="max-width: 1200px; margin-top: 30px;">
+        <h3 style="margin-bottom: 25px; font-weight: normal;">社区内容</h3>
+        {% if query %}
+            <div class="search-tip">
+                <h4 style="margin: 0 0 8px 0;">搜索结果</h4>
+                <p style="margin: 0; color: #666;">
+                    为你找到包含「{{ query }}」的 {{ articles.count }} 篇文章
+                </p>
+                <!-- 搜索重置按钮 -->
+                <a href="{% url 'main:article_list' %}" style="margin-top: 8px; display: inline-block;">
+                    清除搜索，返回全部文章
+                </a>
+            </div>
         {% endif %}
-        {% for page in paginator.page_range %}
-            {% if page == page_obj.number %}
-            	<li class="page-item disabled " style="background-color: lightblue">
-                  <a class="page-link " href="?page={{ page }}">{{ page }}</a>
-                </li>
-            {% else %}
-                <li class="page-item ">
-                  <a class="page-link " href="?page={{ page }}">{{ page }}</a>
-                </li>
-            {% endif %}
+        <!-- 循环渲染每篇文章为“卡片面板” -->
+        {% if all_categories %}
+            <div style="margin-bottom: 20px; padding: 10px 0; border-bottom: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 10px;">
+                <span style="color: #666; align-self: center;">分类：</span>
+                <!-- 全部分类：选中时高亮，且保留搜索关键词 -->
+                <a
+                    href="?query={{ query|default:'' }}"
+                    style="padding: 4px 10px; border-radius: 3px; text-decoration: none; {% if category == 'all' %}background-color: #0d6efd; color: white;{% else %}color: #333;{% endif %}"
+                >
+                    全部
+                </a>
+                <!-- 遍历所有分类：每个分类链接携带当前搜索关键词 -->
+                {% for cate in all_categories %}
+                    <a
+                        href="?category={{ cate.id }}&query={{ query|default:'' }}"
+                        style="padding: 4px 10px; border-radius: 3px; text-decoration: none; {% if category == cate.id|stringformat:'i' %}background-color: #0d6efd; color: white;{% else %}color: #333;{% endif %}"
+                    >
+                        {{ cate.classification }}
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% if articles %}
+    	 {% for article in articles %}
+            <div class="panel panel-default" style="margin-bottom: 24px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
 
+                <!-- 作者信息 -->
+                 <div class="panel-heading" style="padding: 10px 15px; background-color: #f8f9fa;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #666;">作者: {{ article.author.username }}</span>
+                            <!-- 新增：文章发布时间 -->
+                            <span style="color: #999; font-size: 12px;">
+                                {{ article.create_time|date:"Y-m-d H:i" }}
+                            </span>
+                        </div>
+                 </div>
 
+                <!-- 文章标题 -->
+                    <div class="panel-body" style="padding: 12px 15px; padding-bottom: 0;">
+                        <h4 style="margin: 0 0 10px 0;">
+                            <a href="{% url 'main:article_detail' article.id %}"
+                               style="color: #333; text-decoration: none; font-size: 18px;">
+                                {{ article.title }}
+                            </a>
+                        </h4>
+                    </div>
+                <!-- 文章内容摘要（保留统一缩小样式+新增阅读全文） -->
+                    <div class="panel-body" style="padding: 0 15px 12px; line-height: 1.6;">
+                        <div class="article-preview">
+                            {{ article.content|safe_truncate }}
+                            <!-- 新增：阅读全文按钮，引导进入详情页 -->
+                            <a href="{% url 'main:article_detail' article.id %}" class="read-more">
+                                阅读全文 →
+                            </a>
+                        </div>
+                    </div>
+                <!-- 文章互动数据栏 -->
+                    <div class="panel-footer" style="padding: 10px 15px; background-color: #fafafa; border-top: 1px solid #eee; display: flex; gap: 20px;">
+                        <span style="color: #999; font-size: 12px;">
+                            <i class="glyphicon glyphicon-eye-open"></i> {{ article.views|default:0 }} 阅读
+                        </span>
+                        <span style="color: #999; font-size: 12px;">
+                            <i class="glyphicon glyphicon-comment"></i> {{ article.comment_count|default:0 }} 评论
+                        </span>
+                        <span style="color: #999; font-size: 12px;">
+                            <i class="glyphicon glyphicon-star"></i> {{ article.collect_count|default:0 }} 收藏
+                        </span>
+                    </div>
 
+            </div>
         {% endfor %}
+    {% else %}
+        <div style="text-align: center; padding: 60px 0; background-color: #f8f9fa; border-radius: 6px;">
+                <h4 style="color: #666; margin: 0 0 10px 0;">暂无相关文章</h4>
+                <p style="color: #999; margin: 0;">
+                    {% if query %}
+                        换个关键词搜索试试吧~
+                    {% else %}
+                        暂无文章发布，期待你的分享！
+                    {% endif %}
+                </p>
+        </div>
 
-        {% if page_obj.has_next %}
-          <li class="page-item" >
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">下一页</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <a class="page-link" >下一页</a>
-          </li>
+    {% endif %}
+
+
+        <!-- 分页组件 -->
+        {% if is_paginated %}
+            <nav style="text-align: center; margin-top: 30px;">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
+                                上一页
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link">上一页</a>
+                        </li>
+                    {% endif %}
+                    {% for page in paginator.page_range %}
+                        {% if page == page_obj.number %}
+                            <li class="page-item active" style="background-color: lightblue;">
+                                <a class="page-link" href="?page={{ page }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
+                                    {{ page }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
+                                    {{ page }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
+                                下一页
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link">下一页</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
         {% endif %}
-      </ul>
-    </nav>
-  {% endif %}
     </div>
 {% endblock %}

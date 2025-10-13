@@ -13,7 +13,7 @@ class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     # 手机号字段，用于用户登录和联系
     phone = models.CharField(verbose_name="手机号", max_length=11, unique=True, blank=True, null=True)
-    # 用户头像，按年月分类存储
+    # 用户头像
     avatar = models.ImageField(verbose_name="头像", upload_to="user/avatars", default="default.jpg", blank=True,
                                null=True)
     # 标记用户身份，区分家长和其他类型用户
