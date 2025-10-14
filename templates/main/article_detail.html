@@ -6,6 +6,7 @@
 {% block script %}
     <script>
         $(document).ready(function (){
+
             // 缓存DOM元素，避免重复查询
             const $collectBtn = $(".collect");
             const $collectImg = $(".collect>img");
@@ -19,6 +20,7 @@
                 return;
             }
 
+            //收藏
             $collectBtn.click(function (e) {
                 e.preventDefault();  // 阻止默认行为
                 $.ajax({
@@ -47,25 +49,15 @@
                     }
                 });
             });
-        });
-$(document).ready(function (){
-            // 缓存DOM元素，避免重复查询
-            const $linkBtn = $(".link");
-            const $linkImg = $(".link>img");
-            const csrfToken = $("input[name='csrfmiddlewaretoken']").val();
-            const articleId = {{ object.id|default:"null" }};
-            const userId = "{{ request.user.id|default:"null" }}";  // 当前登录用户
-            // 验证必要参数
-            if (!articleId || !userId) {
-                console.error("缺少必要参数：文章ID或用户ID");
-                $linkBtn.prop("disabled", true);  // 禁用按钮
-                return;
-            }
 
+            // 缓存DOM元素，避免重复查询
+            const $linkBtn = $(".like");
+            const $linkImg = $(".like>img");
+            //点赞
             $linkBtn.click(function (e) {
                 e.preventDefault();  // 阻止默认行为
                 $.ajax({
-                    url: "{% url 'main:link_articles' %}",  // 明确指定处理收藏的URL
+                    url: "{% url 'main:like_articles' %}",  // 明确指定处理收藏的URL
                     method: "post",
                     data: {
                         "csrfmiddlewaretoken": csrfToken,
@@ -75,21 +67,23 @@ $(document).ready(function (){
                     dataType: "json",  // 明确期望返回JSON格式
                     success: function (res) {
                             if (res.msg === "点赞成功") {
-                                $linkImg.attr("src", "/static/img/collected.png");
-                                {#alert("收藏成功");#}
+                                $linkImg.attr("src", "/static/img/liked.png");
                             } else if (res.msg === "取消点赞成功") {
-                                $linkImg.attr("src", "/static/img/collect.png");
-                                {#alert("取消收藏成功");#}
+                                $linkImg.attr("src", "/static/img/like.png");
                             }
                     },
                     error: function (xhr) {
                         // 处理网络错误或服务器500错误
-                        console.error("请求错误：", xhr.responseText);
+                        console.error("请求错误：", xhr);
                         alert("网络错误，请稍后重试");
                     }
                 });
             });
+
+
+
         });
+
 
 
         $(document).ready(function() {
@@ -172,9 +166,9 @@ $(document).ready(function (){
         <div class="panel-body" style="padding: 15px; line-height: 1.6;">
             <div class="article-preview">
             {% csrf_token %}
-                <button type="button" class="btn btn-default link">
+                <button type="button" class="btn btn-default like">
                    点赞
-                    {% if object|has_collected:request.user %}
+                    {% if object|has_liked:request.user %}
                         <img src="/static/img/liked.png" alt="" style="width: 30px; height: 22px">
                     {% else %}
                         <img src="/static/img/like.png" alt="" style="width: 30px; height: 22px">

@@ -474,7 +474,7 @@ class Collect(models.Model):
         verbose_name_plural = "收藏夹"
         unique_together = ("user", "article")
 
-class Link(models.Model):
+class Like(models.Model):
     user = models.ForeignKey(verbose_name="用户",to=User,on_delete=models.CASCADE)
     article = models.ForeignKey(verbose_name="文章",to=Articles,on_delete=models.CASCADE)
 

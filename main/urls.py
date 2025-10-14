@@ -20,7 +20,7 @@ urlpatterns = [
 
     path('collect_articles/',views.collect_articles,name="collect_articles"),
 
-    path('link_articles/',views.like_articles,name="link_articles"),
+    path('like_articles/',views.like_articles,name="like_articles"),
 
     # 评论提交：单独的Ajax视图（处理POST请求）
     path('article/<int:article_id>/add-comment/', views.add_comment, name='add_comment'),

@@ -8,7 +8,7 @@ from django.views.decorators.http import require_POST
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
 from main.forms import ArticleForm
-from main.models import Articles, Category, Collect, ArticleComments, Link
+from main.models import Articles, Category, Collect, ArticleComments, Like
 from users.models import User
 
 
@@ -209,16 +209,17 @@ def like_articles(request):
     u_id = request.POST.get('user')
     user = get_object_or_404(User, id=u_id)
     article = get_object_or_404(Articles, id=a_id)
-    link = Link.objects.filter(article=article, user=user).first()
 
-    if link is None:
-        Link.objects.create(article=article, user=user)
-        link_count = Link.objects.filter(article=article).count()
-        return JsonResponse({"code": 200, "status": 1, "msg":"点赞成功","link_count":link_count})
+    like = Like.objects.filter(article=article, user=user).first()
+
+    if like is None:
+        Like.objects.create(article=article, user=user)
+        like_count = Like.objects.filter(article=article).count()
+        return JsonResponse({"code": 200, "status": 1, "msg":"点赞成功","like_count":like_count})
     else:
-        link.delete()
-        link_count = Link.objects.filter(article=article).count()
-        return JsonResponse({"code":200,"status":1,"msg":"点赞成功","link_count":link_count})
+        like.delete()
+        like_count = Like.objects.filter(article=article).count()
+        return JsonResponse({"code":200,"status":1,"msg":"取消点赞成功","like_count":like_count})
 
 
 

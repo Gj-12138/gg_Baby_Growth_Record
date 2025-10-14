@@ -2,7 +2,7 @@ from django.template.library import Library
 from django.utils.html import strip_tags
 from django.utils.text import Truncator
 
-from main.models import Category, Tag, Collect, Link
+from main.models import Category, Tag, Collect, Like
 from users.models import User
 
 register = Library()
@@ -55,8 +55,9 @@ def collect_state(article,user):
         return True
     return False
 
-def link_state(article,user):
-    bool_state = Link.objects.filter(article=article,user=user).exists()
+@register.filter(name='has_liked')
+def liked_state(article,user):
+    bool_state = Like.objects.filter(article=article, user=user).exists()
     if bool_state:
         return True
     return False
