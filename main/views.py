@@ -45,14 +45,6 @@ class ArticleListView(ListView):
             cat = get_object_or_404(Category,id=category_id)
             queryset = queryset.filter(categorys=cat)
 
-
-        # if search_query:
-        #     queryset = queryset.filter(
-        #         Q(title__icontains=search_query) |  # 标题包含关键词
-        #         Q(content__icontains=search_query) |  # 内容包含关键词
-        #         Q(author__username__icontains=search_query)  # 作者名包含关键词
-        #     )
-
         # 富文本搜索修：先剥离HTML标签，再匹配纯文本
         # if search_query:
         #     # 用extra()执行SQL函数，在数据库层面剥离HTML标签
@@ -144,13 +136,6 @@ def add_comment(request, article_id):
         article = Articles.objects.get(id=article_id, state=Articles.APPROVED)  # 只允许对审核通过的文章评论
         user = User.objects.get(id=request.POST.get('user', ''))
 
-        # 4. 创建评论（关联当前登录用户、文章）
-        # ArticleComments.objects.create(
-        #     user=request.user,
-        #     article=article,
-        #     content=comment_content
-        #     # like_count默认0，is_deleted默认False，无需手动传
-        # )
         try:
 
             parent =  ArticleComments.objects.get(id = request.POST.get("parent"))
@@ -159,14 +144,12 @@ def add_comment(request, article_id):
                             article=article,
                             content=comment_content,
                             parent =parent,
-                            # like_count默认0，is_deleted默认False，无需手动传
                         )
         except ArticleComments.DoesNotExist:
             instance = ArticleComments.objects.create(
                 user=request.user,
                 article=article,
                 content=comment_content
-                # like_count默认0，is_deleted默认False，无需手动传
             )
         # 5. 返回成功响应
         new_comment_count = ArticleComments.objects.filter(article=article, is_deleted=False).count()
@@ -174,8 +157,8 @@ def add_comment(request, article_id):
         return JsonResponse({
             'status': 'success',
             'msg': '评论提交成功！',
-            'comment_count': new_comment_count, # 给前端更新“评论总数”显示
-            'data': {  # ← 这一整块就是 res.data
+            'comment_count': new_comment_count,
+            'data': {
                 "username": user.username ,
                 "avatar":user.avatar.url,
                 'content': instance.content,

@@ -4,8 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.conf import settings
 from PIL import Image
-# 导入Photo模型（注意导入路径，需从你的app名开始）
-from .models import Photo  # 若app名为main，则是 from main.models import Photo
+from .models import Photo
 
 
 @receiver(post_save, sender=Photo)

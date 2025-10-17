@@ -22,11 +22,14 @@ from Dome01 import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
     path('',include("main.urls",namespace="main"),name="main"),
+
     path('users/',include("users.urls",namespace="users"),name="users"),
 
     path(f'media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT}),
 
     path('captcha/', include('captcha.urls')),
+
     path('search/', include('haystack.urls')),
 ]
