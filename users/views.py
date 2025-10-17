@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 
 from Dome01.settings import KEY_EMAIL
+from main.models import BabyParent
 from users.froms import BabyAddForm, RegisterForm, LoginForm, UserCenterForm, PasswordChangeForm, UserCenterChangeForm
 from users.models import Baby, User
 from utils.encryption_decryption import encryption, decryption
@@ -33,6 +34,21 @@ class BabyCreateView(CreateView):
     model = Baby
     form_class = BabyAddForm
     success_url = reverse_lazy('users:baby')
+
+    def form_valid(self, form):
+        #  保存宝宝信息
+        baby = form.save(commit=False)
+        baby.save()  # 保存宝宝，获取ID
+
+        # 2. 同步创建家长与宝宝的关系
+        BabyParent.objects.create(
+            baby=baby,  # 关联刚创建的宝宝
+            user=self.request.user,  # 关联当前登录用户（家长）
+            role=form.cleaned_data['parent_role'],  # 从表单获取角色
+        )
+
+        return super().form_valid(form)
+
 
 @method_decorator(login_required(login_url="users:login"), name="dispatch")
 class BabyUpdateView(UpdateView):

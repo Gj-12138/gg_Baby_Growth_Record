@@ -1,243 +1,802 @@
 {% extends 'base/base.html' %}
 {% load template_tags_filters %}
 
-{% block title %}详情{% endblock %}
+{% block title %}{{ object.title }} - 宝宝成长记录{% endblock %}
+
+{% block style %}
+<style>
+    :root {
+        --baby-blue: #b3e0ff;
+        --baby-pink: #ffd1dc;
+        --soft-white: #fff9fb;
+        --light-gray: #f8f9fa;
+        --text-dark: #4a4a4a;
+        --accent-color: #6ec5e9;
+        --medical-green: #a8e6cf;
+        --medical-blue: #b3e0ff;
+    }
+
+    .article-detail-container {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        min-height: calc(100vh - 70px);
+        padding: 30px 0;
+    }
+
+    .article-detail-panel {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-out;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-heading {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        color: var(--text-dark);
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: none;
+    }
+
+    .panel-heading h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .panel-body {
+        padding: 30px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(179, 224, 255, 0.5);
+    }
+
+    .page-title h1 {
+        color: var(--text-dark);
+        margin: 0;
+        font-weight: 600;
+        font-size: 28px;
+    }
+
+    .btn-back {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-back:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+        color: white;
+    }
+
+    /* 文章内容区域 */
+    .article-content-section {
+        margin-bottom: 30px;
+        padding: 25px;
+        background-color: rgba(179, 224, 255, 0.1);
+        border-radius: 12px;
+        border-left: 4px solid var(--accent-color);
+    }
+
+    .article-content {
+        font-size: 16px;
+        line-height: 1.7;
+        color: #333;
+    }
+
+    .article-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 15px 0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 互动按钮区域 */
+    .interaction-section {
+        display: flex;
+        gap: 15px;
+        margin: 25px 0;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.7);
+        border-radius: 12px;
+        justify-content: center;
+    }
+
+    .btn-interaction {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .btn-interaction:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+    }
+
+    .btn-like {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+    }
+
+    .btn-collect {
+        background: linear-gradient(135deg, #ffd166 0%, #ffb347 100%);
+    }
+
+    .btn-interaction img {
+        width: 30px;
+        height: 25px;
+    }
+
+    /* 评论区域 */
+    .comment-section {
+        margin-top: 40px;
+        padding: 25px;
+        background-color: rgba(179, 224, 255, 0.1);
+        border-radius: 12px;
+        border-left: 4px solid var(--accent-color);
+    }
+
+    .section-title {
+        color: var(--text-dark);
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title i {
+        color: var(--accent-color);
+    }
+
+    .comment-count {
+        background-color: var(--accent-color);
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        margin-left: 8px;
+    }
+
+    /* 评论输入区域 */
+    .comment-input-area {
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.7);
+        border-radius: 12px;
+    }
+
+    .comment-textarea {
+        width: 100%;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        font-size: 14px;
+        line-height: 1.5;
+        resize: vertical;
+        min-height: 100px;
+        transition: all 0.3s ease;
+    }
+
+    .comment-textarea:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px rgba(110, 197, 233, 0.2);
+        outline: none;
+    }
+
+    .btn-submit-comment {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+        cursor: pointer;
+    }
+
+    .btn-submit-comment:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+    }
+
+    .comment-message {
+        margin-top: 10px;
+        font-size: 14px;
+        min-height: 20px;
+    }
+
+    .login-prompt {
+        text-align: center;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.7);
+        border-radius: 12px;
+        color: #666;
+    }
+
+    .login-prompt a {
+        color: var(--accent-color);
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    .login-prompt a:hover {
+        text-decoration: underline;
+    }
+
+    /* 评论列表 */
+    .comment-list {
+        margin-top: 20px;
+    }
+
+    .comment-item {
+        padding: 20px;
+        margin-bottom: 15px;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .comment-item:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .comment-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--baby-blue);
+    }
+
+    .user-name {
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+
+    .comment-time {
+        color: #888;
+        font-size: 13px;
+    }
+
+    .comment-content {
+        color: #333;
+        line-height: 1.6;
+        margin-bottom: 10px;
+    }
+
+    .comment-actions {
+        display: flex;
+        gap: 15px;
+        font-size: 13px;
+    }
+
+    .comment-action {
+        color: #666;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .comment-action:hover {
+        color: var(--accent-color);
+    }
+
+    .empty-comments {
+        text-align: center;
+        padding: 40px 20px;
+        color: #888;
+        font-style: italic;
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: fixed;
+        z-index: 0;
+    }
+
+    .decoration-1 {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 209, 220, 0.3);
+        border-radius: 50%;
+        top: 20%;
+        left: 10%;
+    }
+
+    .decoration-2 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 50%;
+        bottom: 20%;
+        right: 10%;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .article-detail-container {
+            padding: 20px 0;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .decoration-1, .decoration-2 {
+            display: none;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .page-title h1 {
+            font-size: 24px;
+        }
+
+        .interaction-section {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .comment-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="article-detail-container">
+    <div class="container">
+        <div class="article-detail-panel">
+            <div class="panel-heading">
+                <h2 class="text-center">
+                    <i class="fa fa-comments"></i> 社区文章详情
+                </h2>
+                <p class="text-center">分享育儿经验，记录宝宝成长点滴</p>
+            </div>
+            <div class="panel-body">
+                <!-- 页面标题和返回按钮 -->
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>{{ object.title }}</h1>
+                    </div>
+                    <a href="javascript:history.back();" class="btn-back">
+                        <i class="fa fa-arrow-left"></i> 返回
+                    </a>
+                </div>
+
+                <!-- 文章内容 -->
+                <div class="article-content-section">
+                    <div class="article-content">
+                        {{ object.content|safe }}
+                    </div>
+                </div>
+
+                <!-- 互动按钮区域 -->
+                <div class="interaction-section">
+                    {% csrf_token %}
+                    <button type="button" class="btn-interaction btn-like like">
+                        点赞
+                        {% if object|has_liked:request.user %}
+                            <img src="/static/img/liked.png" alt="已点赞">
+                        {% else %}
+                            <img src="/static/img/like.png" alt="点赞">
+                        {% endif %}
+                    </button>
+
+                    <button type="button" class="btn-interaction btn-collect collect">
+                        收藏
+                        {% if object|has_collected:request.user %}
+                            <img src="/static/img/collected.png" alt="已收藏">
+                        {% else %}
+                            <img src="/static/img/collect.png" alt="收藏">
+                        {% endif %}
+                    </button>
+                </div>
+
+                <!-- 评论区域 -->
+                <div class="comment-section">
+                    <h3 class="section-title">
+                        <i class="fa fa-comments"></i> 评论区
+                        <span class="comment-count">{{ content_count|default:0 }}</span>
+                    </h3>
+
+                    <!-- 评论输入框 -->
+                    {% if user.is_authenticated %}
+                        <div class="comment-input-area">
+                            <textarea
+                                id="commentContent"
+                                class="comment-textarea"
+                                rows="3"
+                                placeholder="请输入你的评论（不超过500字）..."
+                            ></textarea>
+                            <button id="submitComment" class="btn-submit-comment">
+                                <i class="fa fa-paper-plane"></i> 提交评论
+                            </button>
+                            <div id="commentMsg" class="comment-message"></div>
+                        </div>
+                    {% else %}
+                        <div class="login-prompt">
+                            <p>请<a href="{% url 'login' %}?next={{ request.path }}">登录</a>后发表评论</p>
+                        </div>
+                    {% endif %}
+
+                    <!-- 评论列表 -->
+                    <div id="commentList" class="comment-list">
+                        {% for c in content %}
+                            <div class="comment-item comment-box">
+                                <div class="comment-header">
+                                    <div class="comment-user">
+                                        <img src="/media/{{ c.user.avatar }}" alt="头像" class="user-avatar">
+                                        <span class="user-name">{{ c.user.username }}</span>
+                                    </div>
+                                    <span class="comment-time">{{ c.create_time|date:"Y-m-d H:i" }}</span>
+                                </div>
+                                <div class="comment-content">{{ c.content }}</div>
+                                <div class="comment-actions">
+                                    {% if request.user.is_authenticated %}
+                                        <span class="comment-action like-comment" data-comment-id="{{ c.id }}">
+                                            <i class="glyphicon glyphicon-thumbs-up"></i> 点赞 ({{ c.like_count }})
+                                        </span>
+                                        <span class="comment-action comment-comment" data-comment-id="{{ c.id }}">
+                                            <i class="glyphicon glyphicon-comment"></i> 评论
+                                        </span>
+                                    {% endif %}
+
+                                    {% if request.user.is_authenticated and request.user == c.user %}
+                                        <span class="comment-action del-comment" data-comment-id="{{ c.id }}">
+                                            <i class="glyphicon glyphicon-remove-sign"></i> 删除
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="empty-comments">
+                                <p>暂无评论，快来抢沙发吧~</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 装饰元素 -->
+<div class="decoration decoration-1"></div>
+<div class="decoration decoration-2"></div>
+{% endblock %}
 
 {% block script %}
     <script>
-        $(document).ready(function (){
+        $(document).ready(function () {
+            // 全局配置与缓存
+            const config = {
+                selectors: {
+                    collectBtn: ".collect",
+                    collectImg: ".collect>img",
+                    likeBtn: ".like",
+                    likeImg: ".like>img",
+                    commentList: "#commentList",
+                    submitComment: "#submitComment",
+                    commentContent: "#commentContent",
+                    commentMsg: "#commentMsg",
+                    csrfInput: "input[name='csrfmiddlewaretoken']",
+                    commentCount: "h4:contains('评论区')"
+                },
+                urls: {
+                    collect: "{% url 'main:collect_articles' %}",
+                    like: "{% url 'main:like_articles' %}",
+                    addComment: "{% url 'main:add_comment' article.id %}",
+                    deleteComment: "{% url 'main:delete_comment' article.id %}",
+                    {#likeComment: "{% url 'main:like_comment' %}"#}
+                }
+            };
 
-            // 缓存DOM元素，避免重复查询
-            const $collectBtn = $(".collect");
-            const $collectImg = $(".collect>img");
-            const csrfToken = $("input[name='csrfmiddlewaretoken']").val();
-            const articleId = {{ object.id|default:"null" }};
-            const userId = "{{ request.user.id|default:"null" }}";  // 当前登录用户
-            // 验证必要参数
-            if (!articleId || !userId) {
-                console.error("缺少必要参数：文章ID或用户ID");
-                $collectBtn.prop("disabled", true);  // 禁用按钮
-                return;
+            // 缓存DOM元素
+            const $dom = {};
+            Object.keys(config.selectors).forEach(key => {
+                $dom[key] = $(config.selectors[key]);
+            });
+
+            // 全局变量
+            const state = {
+                csrfToken: $dom.csrfInput.val(),
+                articleId: {{ object.id|default:"null" }},
+                userId: "{{ request.user.id|default:"null" }}",
+                isAuthenticated: "{{ request.user.is_authenticated }}" === "True"
+            };
+
+            // 初始化验证
+            function initValidation() {
+                if (!state.articleId || !state.userId) {
+                    console.error("缺少必要参数：文章ID或用户ID");
+                    $dom.collectBtn.add($dom.likeBtn).prop("disabled", true);
+                }
+
+                // 未登录状态下禁用交互功能
+                if (!state.isAuthenticated) {
+                    $dom.collectBtn.add($dom.likeBtn).prop("disabled", true);
+                    $dom.collectBtn.add($dom.likeBtn).attr("title", "请登录后操作");
+                }
             }
 
-            //收藏
-            $collectBtn.click(function (e) {
-                e.preventDefault();  // 阻止默认行为
+            // 通用AJAX请求函数
+            function ajaxRequest(url, data, successCallback, errorCallback) {
+                // 添加CSRF令牌
+                data.csrfmiddlewaretoken = state.csrfToken;
+
+                // 显示加载状态
+                const $btn = $(this);
+                $btn.prop("disabled", true).data("original-text", $btn.text());
+                $btn.text("处理中...");
+
                 $.ajax({
-                    url: "{% url 'main:collect_articles' %}",  // 明确指定处理收藏的URL
+                    url: url,
                     method: "post",
-                    data: {
-                        "csrfmiddlewaretoken": csrfToken,
-                        "article": articleId,
-                        "user":userId
-                    },
-                    dataType: "json",  // 明确期望返回JSON格式
-                    success: function (res) {
-                            if (res.msg === "收藏成功") {
-                                $collectImg.attr("src", "/static/img/collected.png");
-                                {#alert("收藏成功");#}
-                            } else if (res.msg === "取消收藏成功") {
-                                $collectImg.attr("src", "/static/img/collect.png");
-                                {#alert("取消收藏成功");#}
-                            }
-
-                    },
-                    error: function (xhr) {
-                        // 处理网络错误或服务器500错误
-                        console.error("请求错误：", xhr.responseText);
-                        alert("网络错误，请稍后重试");
-                    }
-                });
-            });
-
-            // 缓存DOM元素，避免重复查询
-            const $linkBtn = $(".like");
-            const $linkImg = $(".like>img");
-            //点赞
-            $linkBtn.click(function (e) {
-                e.preventDefault();  // 阻止默认行为
-                $.ajax({
-                    url: "{% url 'main:like_articles' %}",  // 明确指定处理收藏的URL
-                    method: "post",
-                    data: {
-                        "csrfmiddlewaretoken": csrfToken,
-                        "article": articleId,
-                        "user":userId
-                    },
-                    dataType: "json",  // 明确期望返回JSON格式
-                    success: function (res) {
-                            if (res.msg === "点赞成功") {
-                                $linkImg.attr("src", "/static/img/liked.png");
-                            } else if (res.msg === "取消点赞成功") {
-                                $linkImg.attr("src", "/static/img/like.png");
-                            }
-                    },
-                    error: function (xhr) {
-                        // 处理网络错误或服务器500错误
-                        console.error("请求错误：", xhr);
-                        alert("网络错误，请稍后重试");
-                    }
-                });
-            });
-
-
-
-        });
-
-
-
-        $(document).ready(function() {
-            // 1. 提交评论的Ajax逻辑
-            $('#submitComment').click(function() {
-                const $contentInput = $('#commentContent');
-                const content = $contentInput.val().trim();
-                const csrfToken = '{{ csrf_token }}';
-                const articleId = '{{ article.id }}';  // 从ArticleDetailView传递的article对象获取ID
-                const $msg = $('#commentMsg');
-
-
-                // 前端验证
-                if (!content) {
-                    $msg.text('评论内容不能为空！');
-                    return;
-                }
-                if (content.length > 500) {
-                    $msg.text('评论内容不能超过500字！');
-                    return;
-                }
-
-                // 发送Ajax POST请求
-                $.ajax({
-                    url: "{% url 'main:add_comment' article.id %}",  // 对应评论提交的URL
-                    method: 'POST',
-                    data: {
-                        'csrfmiddlewaretoken': csrfToken,
-                        'content': content
-                    },
-                    dataType: 'json',
+                    data: data,
+                    dataType: "json",
                     success: function(res) {
-                        if (res.status === 'success') {
-                            $msg.text(res.msg).css('color', 'green');
-                            $contentInput.val('');  // 清空输入框
-                            // 刷新页面（或局部刷新评论列表，更优：后续可改造成返回最新评论HTML，直接追加）
-                            location.reload();
-                            // 更新评论总数
-                            $('h4:contains("评论区")').text(`评论区（共${res.content_count}条）`);
-                        } else {
-                            $msg.text(res.msg).css('color', 'red');
-                        }
+                        successCallback(res);
                     },
                     error: function(xhr) {
-                        $msg.text('网络错误，评论提交失败，请重试！').css('color', 'red');
-                        console.error('评论请求错误：', xhr.responseText);
+                        const errorMsg = errorCallback ? errorCallback(xhr) :
+                            `请求失败: ${xhr.statusText || '网络错误'}`;
+                        showMessage($dom.commentMsg, errorMsg, "error");
+                    },
+                    complete: function() {
+                        // 恢复按钮状态
+                        $btn.prop("disabled", false)
+                            .text($btn.data("original-text") || $btn.text());
                     }
                 });
-            });
+            }
 
+            // 消息提示函数
+            function showMessage($element, text, type = "info") {
+                $element.text(text)
+                    .css("color", type === "error" ? "red" : "green")
+                    .fadeIn(300);
+
+                // 3秒后自动隐藏
+                setTimeout(() => {
+                    $element.fadeOut(300);
+                }, 3000);
+            }
+
+            // 更新评论计数
+            function updateCommentCount(delta = 1) {
+                const $countEl = $(".comment-count");
+                const currentCount = parseInt($countEl.text()) || 0;
+                const newCount = currentCount + delta;
+                $countEl.text(newCount);
+            }
+
+            // 收藏功能
+            function initCollectFeature() {
+                $dom.collectBtn.click(function(e) {
+                    e.preventDefault();
+                    if (!state.isAuthenticated) return;
+
+                    ajaxRequest.call(this, config.urls.collect, {
+                        article: state.articleId,
+                        user: state.userId
+                    }, function(res) {
+                        if (res.msg === "收藏成功") {
+                            $dom.collectImg.attr("src", "/static/img/collected.png");
+                            showMessage($dom.commentMsg, "收藏成功");
+                        } else if (res.msg === "取消收藏成功") {
+                            $dom.collectImg.attr("src", "/static/img/collect.png");
+                            showMessage($dom.commentMsg, "取消收藏成功");
+                        }
+                    });
+                });
+            }
+
+            // 点赞功能
+            function initLikeFeature() {
+                $dom.likeBtn.click(function(e) {
+                    e.preventDefault();
+                    if (!state.isAuthenticated) return;
+
+                    ajaxRequest.call(this, config.urls.like, {
+                        article: state.articleId,
+                        user: state.userId
+                    }, function(res) {
+                        if (res.msg === "点赞成功") {
+                            $dom.likeImg.attr("src", "/static/img/liked.png");
+                            showMessage($dom.commentMsg, "点赞成功");
+                        } else if (res.msg === "取消点赞成功") {
+                            $dom.likeImg.attr("src", "/static/img/like.png");
+                            showMessage($dom.commentMsg, "取消点赞成功");
+                        }
+                    });
+                });
+            }
+
+            // 评论提交功能
+            function initCommentSubmit() {
+                $dom.submitComment.click(function() {
+                    if (!state.isAuthenticated) {
+                        showMessage($dom.commentMsg, "请先登录再评论", "error");
+                        return;
+                    }
+
+                    const content = $dom.commentContent.val().trim();
+
+                    // 前端验证
+                    if (!content) {
+                        showMessage($dom.commentMsg, "评论内容不能为空！", "error");
+                        return;
+                    }
+                    if (content.length > 500) {
+                        showMessage($dom.commentMsg, "评论内容不能超过500字！", "error");
+                        return;
+                    }
+
+                    ajaxRequest.call(this, config.urls.addComment, {
+                        content: content,
+                        article: state.articleId,
+                        user: state.userId
+                    }, function(res) {
+                        if (res.status === 'success') {
+                            // 添加新评论到列表顶部
+                            $dom.commentList.prepend(`
+                                <div class="comment-item comment-box">
+                                    <div class="comment-header">
+                                        <div class="comment-user">
+                                            <img src="${res.data.avatar}" alt="头像" class="user-avatar">
+                                            <span class="user-name">${res.data.username}</span>
+                                        </div>
+                                        <span class="comment-time">${res.data.created}</span>
+                                    </div>
+                                    <div class="comment-content">${res.data.content}</div>
+                                    <div class="comment-actions">
+                                        <span class="comment-action like-comment" data-comment-id="${res.data.id}">
+                                            <i class="fa fa-thumbs-up"></i> 点赞( 0 )
+                                        </span>
+                                        <span class="comment-action comment-comment" data-comment-id="${res.data.id}">
+                                            <i class="fa fa-comment"></i> 评论
+                                        </span>
+                                        <span class="comment-action del-comment" data-comment-id="${res.data.id}">
+                                            <i class="fa fa-trash"></i> 删除
+                                        </span>
+                                    </div>
+                                </div>
+                            `);
+
+                            // 更新评论计数
+                            updateCommentCount(1);
+
+                            // 清空输入框
+                            $dom.commentContent.val('');
+                            showMessage($dom.commentMsg, res.msg);
+                        } else {
+                            showMessage($dom.commentMsg, res.msg, "error");
+                        }
+                    });
+                });
+            }
+
+            // 评论交互功能（删除、点赞）
+            function initCommentInteractions() {
+                // 使用事件委托处理动态生成的元素
+                $dom.commentList.on("click", ".del-comment", function() {
+                    const $this = $(this);
+                    const cid = $this.data("comment-id");
+
+                    if (!confirm('确定删除这条评论吗？')) return;
+
+                    ajaxRequest.call(this, config.urls.deleteComment, {
+                        comment_id: cid
+                    }, function() {
+                        // 移除评论元素并更新计数
+                        $this.closest('.comment-box').fadeOut(300, function() {
+                            $(this).remove();
+                            updateCommentCount(-1);
+                        });
+                        showMessage($dom.commentMsg, "评论已删除");
+                    });
+                });
+
+                // 评论点赞功能
+                {#$dom.commentList.on("click", ".like-comment", function() {#}
+                {#    const $this = $(this);#}
+                {#    const cid = $this.data("comment-id");#}
+                {#    const $countEl = $this.contents().filter(function() {#}
+                {#        return this.nodeType === 3; // 文本节点#}
+                {#    });#}
+                {##}
+                {#    ajaxRequest.call(this, config.urls.likeComment, {#}
+                {#        comment_id: cid#}
+                {#    }, function(res) {#}
+                {#        if (res.status === 'success') {#}
+                {#            // 更新点赞数#}
+                {#            $countEl.replaceWith(` 点赞( ${res.like_count} )`);#}
+                {#            showMessage($dom.commentMsg, res.msg);#}
+                {#        } else {#}
+                {#            showMessage($dom.commentMsg, res.msg, "error");#}
+                {#        }#}
+                {#    });#}
+                {# }); #}
+
+                // 评论回复功能（待实现）
+                $dom.commentList.on("click", ".comment-comment", function() {
+                    const cid = $(this).data("comment-id");
+                    // 这里可以实现评论回复的逻辑
+                    showMessage($dom.commentMsg, "回复功能即将上线，敬请期待！");
+                });
+            }
+
+            // 初始化所有功能
+            function init() {
+                initValidation();
+                initCollectFeature();
+                initLikeFeature();
+                initCommentSubmit();
+                initCommentInteractions();
+            }
+
+            // 启动初始化
+            init();
         });
-
-
     </script>
-{% endblock %}
-
-
-{% block body %}
-<div class="panel-footer text-right">
-    <a href="javascript:history.back();" class="btn btn-default btn-sm">
-     返回
-    </a>
-</div>
-<div class="container" style="margin-top: 30px;">
-    <!-- 页头 -->
-    <div class="page-header">
-        <h2>标题：{{ object.title }}</h2>
-
-    </div>
-
-    <!-- 主卡片 -->
-    <div class="panel panel-primary">
-        <div class="panel-heading">
-             正文内容
-        </div>
-        <div class="panel-body">
-            {{ object.content|safe }}
-        </div>
-
-        <div class="panel-body" style="padding: 15px; line-height: 1.6;">
-            <div class="article-preview">
-            {% csrf_token %}
-                <button type="button" class="btn btn-default like">
-                   点赞
-                    {% if object|has_liked:request.user %}
-                        <img src="/static/img/liked.png" alt="" style="width: 30px; height: 22px">
-                    {% else %}
-                        <img src="/static/img/like.png" alt="" style="width: 30px; height: 22px">
-                    {% endif %}
-                </button>
-
-                <button type="button" class="btn btn-default collect">
-                    收藏
-                    {% if object|has_collected:request.user %}
-                        <img src="/static/img/collected.png" alt="" style="width: 30px; height: 22px">
-                    {% else %}
-                        <img src="/static/img/collect.png" alt="" style="width: 30px; height: 22px">
-                    {% endif %}
-                </button>
-            </div>
-        </div>
-
-    </div>
-
-
-    <!-- 评论区域 -->
-    <div style="margin-top: 30px;">
-    <h4>评论区（共 {{ content_count|default:0 }} 条）</h4>
-
-        <!-- 1. 评论输入框（只对登录用户显示） -->
-        {% if user.is_authenticated %}
-            <div style="margin: 20px 0;">
-                <textarea
-                    id="commentContent"
-                    rows="3"
-                    style="width: 100%; padding: 10px; border: 1px solid #ddd;"
-                    placeholder="请输入你的评论（不超过500字）..."
-                ></textarea>
-                <button id="submitComment" class="btn btn-primary" style="margin-top: 10px;">
-                    提交评论
-                </button>
-                <div id="commentMsg" style="margin-top: 10px; color: red;"></div>
-            </div>
-        {% else %}
-            <p style="color: #666;">请<a href="{% url 'login' %}">登录</a>后发表评论</p>
-        {% endif %}
-
-        <!-- 2. 评论列表（渲染从ArticleDetailView传递的comments数据） -->
-        <div id="commentList">
-            {% for c in content %}
-                <div style="padding: 15px; border-bottom: 1px solid #eee; margin-bottom: 10px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span style="font-weight: 500;">
-                            <img src="/media/{{ request.user.avatar }}" alt="头像" style="width: 32px;height: 32px;border-radius: 50%">
-                            {{ c.user.username }}
-                        </span>
-                        <span style="color: #999; font-size: 12px;">{{ c.create_time|date:"Y-m-d H:i" }}</span>
-                    </div>
-                    <!-- 评论内容 -->
-                    <div style="color: #333;">{{ c.content }}</div>
-                    <!-- 评论点赞 -->
-                    <div style="margin-top: 8px; font-size: 12px; color: #666;">
-                        <span class="like-comment" data-comment-id="{{ c.id }}">
-                            <i class="glyphicon glyphicon-thumbs-up"></i> 点赞 ({{ c.like_count }})
-                        </span>
-                    </div>
-                </div>
-            {% empty %}
-                <p style="color: #999; padding: 20px; border: 1px dashed #ddd; text-align: center;">
-                    暂无评论，快来抢沙发吧~
-                </p>
-            {% endfor %}
-        </div>
-    </div>
-
-</div>
 {% endblock %}

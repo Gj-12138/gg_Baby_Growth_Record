@@ -1,0 +1,402 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}成长记录列表 - 宝宝成长记录{% endblock %}
+
+{% block style %}
+<style>
+    :root {
+        --baby-blue: #b3e0ff;
+        --baby-pink: #ffd1dc;
+        --soft-white: #fff9fb;
+        --light-gray: #f8f9fa;
+        --text-dark: #4a4a4a;
+        --accent-color: #6ec5e9;
+        --medical-green: #a8e6cf;
+        --medical-blue: #b3e0ff;
+    }
+
+    .records-container {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        min-height: calc(100vh - 70px);
+        padding: 30px 0;
+    }
+
+    .records-panel {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-out;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-heading {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        color: var(--text-dark);
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: none;
+    }
+
+    .panel-heading h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .panel-body {
+        padding: 30px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(179, 224, 255, 0.5);
+    }
+
+    .page-title h3 {
+        color: var(--text-dark);
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .btn-create {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+        color: white;
+    }
+
+    /* 记录列表样式 */
+    .records-list {
+        margin-top: 20px;
+    }
+
+    .record-card {
+        background-color: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .record-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .record-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .record-title {
+        margin: 0;
+        color: var(--text-dark);
+        font-weight: 600;
+        font-size: 18px;
+    }
+
+    .created_at {
+        color: #888;
+        font-size: 14px;
+        background-color: rgba(179, 224, 255, 0.3);
+        padding: 4px 8px;
+        border-radius: 8px;
+    }
+
+    .record-content {
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+
+    .record-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background-color: rgba(179, 224, 255, 0.2);
+        padding: 4px 8px;
+        border-radius: 8px;
+    }
+
+    .meta-item i {
+        color: var(--accent-color);
+    }
+
+    .category-badge {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    /* 空状态样式 */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background-color: rgba(179, 224, 255, 0.1);
+        border-radius: 12px;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        color: var(--baby-blue);
+        margin-bottom: 20px;
+    }
+
+    .empty-state h4 {
+        color: var(--text-dark);
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .empty-state p {
+        color: #666;
+        margin-bottom: 25px;
+    }
+
+    /* 分页样式 */
+    .pagination-baby {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .pagination-baby .page-item .page-link {
+        color: var(--accent-color);
+        margin: 0 3px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        padding: 8px 15px;
+    }
+
+    .pagination-baby .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border-color: var(--accent-color);
+        color: white;
+    }
+
+    .pagination-baby .page-item .page-link:hover {
+        background-color: var(--baby-blue);
+        color: var(--text-dark);
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: fixed;
+        z-index: 0;
+    }
+
+    .decoration-1 {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 209, 220, 0.3);
+        border-radius: 50%;
+        top: 20%;
+        left: 10%;
+    }
+
+    .decoration-2 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 50%;
+        bottom: 20%;
+        right: 10%;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .records-container {
+            padding: 20px 0;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .decoration-1, .decoration-2 {
+            display: none;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .record-header {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .record-meta {
+            flex-direction: column;
+            gap: 8px;
+        }
+       {#.record-meta span:last-child {#}
+       {#     font-weight: 100;#}
+       {# }#}
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="records-container">
+    <div class="container">
+        <div class="records-panel">
+            <div class="panel-heading">
+                <h2 class="text-center">
+                    <i class="fa fa-line-chart"></i> 宝宝成长记录
+                </h2>
+                <p class="text-center">记录宝宝成长的每一个珍贵瞬间</p>
+            </div>
+            <div class="panel-body">
+                <!-- 页面标题和创建按钮 -->
+                <div class="page-header">
+                    <div class="page-title">
+                        <h3>成长记录</h3>
+                    </div>
+                    <a href="{% url 'main:record_create' %}" class="btn-create">
+                        <i class="fa fa-plus"></i> 创建新记录
+                    </a>
+                </div>
+
+                <!-- 记录列表 -->
+                <div class="records-list">
+                    {% if records %}
+                        {% for record in records %}
+                                <div class="record-card">
+                                    <div class="record-header">
+                                        <h4 class="record-title">{{ record.title }}</h4>
+                                        <span class="created_at">
+                                            {{ record.created_at|date:"Y-m-d" }}
+                                        </span>
+                                    </div>
+                                    <div class="record-content">
+                                        {{ record.content|truncatechars:100 }}
+                                    </div>
+                                    <div class="record-meta">
+                                        <span class="meta-item category-badge">
+                                            {{ record.get_category_display }}
+                                        </span>
+                                        <span class="meta-item">
+                                            用户： {{ record.baby.name }}
+                                        </span>
+                                        <span class="meta-item">
+                                          照片{{ record.related_photos.count }}张
+                                        </span>
+                                        <span class="meta-item record_date ">
+                                           发生时间 :{{ record.record_date}}
+                                        </span>
+                                        <a href="{% url 'main:record_detail' record.id %}" class="meta-item">
+                                           阅读全文
+                                        </a>
+                                    </div>
+                                </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fa fa-line-chart"></i>
+                            <h4>暂无成长记录</h4>
+                            <p>还没有添加任何成长记录，点击"创建新记录"开始记录宝宝成长吧！</p>
+                            <a href="{% url 'main:record_create' %}" class="btn-create">
+                                <i class="fa fa-plus"></i> 创建第一条记录
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 分页组件 -->
+                {% if is_paginated %}
+                    <nav class="pagination-baby">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
+                                        <i class="fa fa-chevron-left"></i> 上一页
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link"><i class="fa fa-chevron-left"></i> 上一页</a>
+                                </li>
+                            {% endif %}
+
+                            {% for page in paginator.page_range %}
+                                {% if page == page_obj.number %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="?page={{ page }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
+                                            {{ page }}
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
+                                            {{ page }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
+                                        下一页 <i class="fa fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link">下一页 <i class="fa fa-chevron-right"></i></a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 装饰元素 -->
+<div class="decoration decoration-1"></div>
+<div class="decoration decoration-2"></div>
+{% endblock %}

@@ -1,0 +1,496 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ event.title }} - {{ event.baby.name }}的里程碑{% endblock %}
+
+{% block style %}
+<style>
+    :root {
+        --baby-blue: #b3e0ff;
+        --baby-pink: #ffd1dc;
+        --soft-white: #fff9fb;
+        --light-gray: #f8f9fa;
+        --text-dark: #4a4a4a;
+        --accent-color: #6ec5e9;
+        --medical-green: #a8e6cf;
+        --medical-blue: #b3e0ff;
+    }
+
+    .event-detail-container {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        min-height: calc(100vh - 70px);
+        padding: 30px 0;
+    }
+
+    .event-detail-panel {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-out;
+        margin: 0 auto;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-heading {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        color: var(--text-dark);
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: none;
+    }
+
+    .panel-heading h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .panel-body {
+        padding: 30px;
+    }
+
+    /* 面包屑导航 */
+    .breadcrumb-nav {
+        margin-bottom: 30px;
+        padding: 15px 20px;
+        background-color: rgba(179, 224, 255, 0.1);
+        border-radius: 12px;
+    }
+
+    .breadcrumb {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        align-items: center;
+    }
+
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .breadcrumb-item a {
+        color: var(--accent-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb-item a:hover {
+        color: var(--baby-blue);
+    }
+
+    .breadcrumb-item.active {
+        color: var(--text-dark);
+        font-weight: 600;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: ">";
+        margin: 0 10px;
+        color: #888;
+    }
+
+    /* 页面标题区域 */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(179, 224, 255, 0.5);
+    }
+
+    .page-title h2 {
+        color: var(--text-dark);
+        margin: 0 0 10px 0;
+        font-weight: 600;
+    }
+
+    .event-meta {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .event-date {
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .event-type-badge {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    /* 按钮样式 */
+    .btn-action {
+        border: none;
+        border-radius: 20px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #ffd54f 0%, #ffb300 100%);
+        color: white;
+    }
+
+    .btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 181, 0, 0.4);
+        color: white;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #ff8a80 0%, #ff5252 100%);
+        color: white;
+    }
+
+    .btn-delete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 82, 82, 0.4);
+        color: white;
+    }
+
+    .btn-back {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-back:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+        color: white;
+    }
+
+    /* 事件详情卡片 */
+    .event-detail-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 30px;
+        border: 1px solid rgba(179, 224, 255, 0.3);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        color: white;
+        padding: 20px;
+    }
+
+    .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .card-body {
+        padding: 25px;
+    }
+
+    .event-description {
+        color: #666;
+        line-height: 1.6;
+        font-size: 16px;
+    }
+
+    .event-meta-info {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(179, 224, 255, 0.3);
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        color: #888;
+        font-size: 14px;
+    }
+
+    /* 照片区域 */
+    .photos-section {
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        color: var(--text-dark);
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .photos-count {
+        color: #888;
+        font-size: 16px;
+        font-weight: normal;
+    }
+
+    .photos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .photo-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(179, 224, 255, 0.3);
+    }
+
+    .photo-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .photo-img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+
+    .photo-caption {
+        padding: 15px;
+    }
+
+    .photo-description {
+        font-size: 14px;
+        color: #666;
+        line-height: 1.4;
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: fixed;
+        z-index: 0;
+    }
+
+    .decoration-1 {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 209, 220, 0.3);
+        border-radius: 50%;
+        top: 20%;
+        left: 5%;
+    }
+
+    .decoration-2 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 50%;
+        bottom: 20%;
+        right: 5%;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 992px) {
+        .panel-body {
+            padding: 20px;
+        }
+
+        .decoration-1, .decoration-2 {
+            display: none;
+        }
+
+        .photos-grid {
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .event-detail-container {
+            padding: 20px 0;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .action-buttons {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .photos-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+
+        .photo-img {
+            height: 150px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .photos-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .event-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="event-detail-container">
+    <div class="container">
+        <div class="event-detail-panel">
+            <div class="panel-heading">
+                <h2 class="text-center">
+                    里程碑事件详情
+                </h2>
+                <p class="text-center">记录宝宝成长的重要时刻</p>
+            </div>
+            <div class="panel-body">
+                <!-- 面包屑导航 -->
+                <nav class="breadcrumb-nav">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'users:baby' %}">宝宝列表</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'main:event_list' %}">{{ event.baby.name }}的事件</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ event.title }}</li>
+                    </ol>
+                </nav>
+
+                <!-- 页面标题和操作按钮 -->
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>{{ event.title }}</h2>
+                        <div class="event-meta">
+                            <div class="event-date">
+                                 {{ event.happen_date|date:"Y年m月d日" }}
+                            </div>
+                            {% if event.type %}
+                            <div class="event-type-badge">
+                                {{ event.type.name }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="{% url 'main:event_update' event.id %}" class="btn-action btn-edit">
+                            编辑
+                        </a>
+                        <a href="{% url 'main:event_confirm_delete' event.id %}" class="btn-action btn-delete">
+                           删除
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 事件详情卡片 -->
+                <div class="event-detail-card">
+                    <div class="card-header">
+                        <h5>事件详情</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="event-description">
+                            {{ event.description|linebreaks }}
+                        </div>
+
+                        <div class="event-meta-info">
+                            <div class="meta-item">
+                                <span>宝宝：{{ event.baby.name }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>记录者：{{ event.created_by.username }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>记录时间：{{ event.created_at|date:"Y年m月d日 H:i" }}</span>
+                            </div>
+                            {% if event.updated_at != event.created_at %}
+                            <div class="meta-item">
+                                <span>最后更新：{{ event.updated_at|date:"Y年m月d日 H:i" }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 关联照片 -->
+                {% if event.photos.all %}
+                <div class="photos-section">
+                    <h4 class="section-title">
+                        相关照片
+                        <span class="photos-count">({{ event.photos.count }})</span>
+                    </h4>
+                    <div class="photos-grid">
+                        {% for photo in event.photos.all %}
+                        <div class="photo-card">
+                            <img src="{{ photo.file.url }}" class="photo-img"
+                                 alt="{{ photo.description|default:'事件照片' }}">
+                            {% if photo.description %}
+                            <div class="photo-caption">
+                                <p class="photo-description">{{ photo.description }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 返回按钮 -->
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="{% url 'main:event_list' %}" class="btn-back">
+                         返回列表
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 装饰元素 -->
+<div class="decoration decoration-1"></div>
+<div class="decoration decoration-2"></div>
+{% endblock %}

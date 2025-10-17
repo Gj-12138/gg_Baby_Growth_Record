@@ -24,7 +24,24 @@ class MeasurementAdmin(admin.ModelAdmin):
 
 @admin.register(Vaccine)
 class VaccineAdmin(admin.ModelAdmin):
-    pass
+    # 列表页显示的字段
+    list_display = ('name', 'code', 'category', 'dose', 'shot_age_days_start', 'shot_age_days_end')
+    # 可搜索的字段
+    search_fields = ('name', 'code', 'category')
+    # 过滤条件
+    list_filter = ('category',)
+    # 编辑页字段分组
+    fieldsets = (
+        ('基本信息', {
+            'fields': ('name', 'code', 'category')
+        }),
+        ('接种信息', {
+            'fields': ('dose', 'shot_age_days_start', 'shot_age_days_end', 'interval_days')
+        }),
+        ('说明信息', {
+            'fields': ('description', 'contraindication', 'side_effects')
+        }),
+    )
 
 @admin.register(VaccineRecord)
 class VaccineRecordAdmin(admin.ModelAdmin):
@@ -57,6 +74,5 @@ class TagAdmin(admin.ModelAdmin):
 @admin.register(Articles)
 class ArticleAdmin(admin.ModelAdmin):
     pass
-
 
 

@@ -1,0 +1,666 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}
+    {{ title }} - 宝宝成长记录
+{% endblock %}
+
+{% block style %}
+<style>
+    :root {
+        --baby-blue: #b3e0ff;
+        --baby-pink: #ffd1dc;
+        --soft-white: #fff9fb;
+        --light-gray: #f8f9fa;
+        --text-dark: #4a4a4a;
+        --accent-color: #6ec5e9;
+        --medical-green: #a8e6cf;
+        --medical-blue: #b3e0ff;
+    }
+
+    .event-form-container {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        min-height: calc(100vh - 70px);
+        padding: 30px 0;
+    }
+
+    .event-form-panel {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-out;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-heading {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        color: var(--text-dark);
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: none;
+    }
+
+    .panel-heading h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .panel-body {
+        padding: 30px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(179, 224, 255, 0.5);
+    }
+
+    .page-title h3 {
+        color: var(--text-dark);
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .btn-back {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-back:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+        color: white;
+    }
+
+    /* 表单样式 */
+    .form-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: rgba(179, 224, 255, 0.1);
+        border-radius: 12px;
+    }
+
+    .section-title {
+        color: var(--text-dark);
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .required::after {
+        content: " *";
+        color: #ff4757;
+    }
+
+    .form-control, .form-select, textarea.form-control {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 14px;
+    }
+
+    .form-control:focus, .form-select:focus, textarea.form-control:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px rgba(110, 197, 233, 0.2);
+        outline: none;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-text {
+        font-size: 13px;
+        color: #888;
+        margin-top: 5px;
+    }
+
+    .error-message {
+        color: #ff4757;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    /* 错误提示样式 */
+    .error-container {
+        background-color: rgba(255, 71, 87, 0.1);
+        border: 1px solid rgba(255, 71, 87, 0.3);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .error-title {
+        color: #ff4757;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .error-list {
+        color: #ff4757;
+        font-size: 14px;
+        padding-left: 20px;
+        margin: 0;
+    }
+
+    .error-list li {
+        margin-bottom: 5px;
+    }
+
+    /* 照片上传区域 */
+    .photo-upload-area {
+        text-align: center;
+        padding: 30px 20px;
+        border: 2px dashed var(--baby-blue);
+        border-radius: 12px;
+        background-color: rgba(179, 224, 255, 0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-bottom: 20px;
+    }
+
+    .photo-upload-area:hover {
+        background-color: rgba(179, 224, 255, 0.2);
+        border-color: var(--accent-color);
+    }
+
+    .photo-upload-icon {
+        font-size: 40px;
+        color: var(--accent-color);
+        margin-bottom: 10px;
+    }
+
+    .photo-upload-text {
+        color: var(--text-dark);
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+
+    .photo-upload-hint {
+        color: #888;
+        font-size: 13px;
+    }
+
+    .photo-preview-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .photo-preview {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        aspect-ratio: 1;
+    }
+
+    .photo-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .photo-remove {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+        color: #ff4757;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .photo-preview:hover .photo-remove {
+        opacity: 1;
+    }
+
+    /* 按钮样式 */
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 12px 24px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+    }
+
+    .btn-cancel {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 12px 24px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-cancel:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 154, 158, 0.4);
+        color: white;
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: fixed;
+        z-index: 0;
+    }
+
+    .decoration-1 {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 209, 220, 0.3);
+        border-radius: 50%;
+        top: 20%;
+        left: 10%;
+    }
+
+    .decoration-2 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 50%;
+        bottom: 20%;
+        right: 10%;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .event-form-container {
+            padding: 20px 0;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .decoration-1, .decoration-2 {
+            display: none;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .photo-preview-container {
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="event-form-container">
+    <div class="container">
+        <div class="event-form-panel">
+            <div class="panel-heading">
+                <h2 class="text-center">
+                    {% if is_new %}添加里程碑事件{% else %}编辑里程碑事件{% endif %}
+                </h2>
+                <p class="text-center">{% if baby %}为 {{ baby.name }} 记录重要时刻{% else %}记录重要时刻{% endif %}</p>
+            </div>
+            <div class="panel-body">
+                <!-- 页面标题和返回按钮 -->
+                <div class="page-header">
+                    <div class="page-title">
+                        <h3>{{ title }}</h3>
+                        {% if baby %}
+                        <p class="text-muted" style="margin-top: 5px; font-size: 14px;">
+                            为 {{ baby.name }} 宝宝记录成长里程碑
+                        </p>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'main:event_list' %}" class="btn-back">
+                        返回
+                    </a>
+                </div>
+
+                <!-- 表单区域 -->
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- 错误提示 -->
+                    {% if form.non_field_errors %}
+                    <div class="error-container">
+                        <div class="error-title">
+                            <i class="fas fa-exclamation-circle"></i>
+                            请修正以下错误：
+                        </div>
+                        <ul class="error-list">
+                            {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <!-- 基本信息 -->
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-info-circle"></i>
+                            基本信息
+                        </h4>
+                    <!-- 宝宝信息显示（只读） -->
+                    {% if baby %}
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-child"></i>
+                            宝宝信息
+                        </h4>
+                        <div class="form-group">
+                            <label class="form-label">宝宝姓名</label>
+                            <div class="form-control" style="background-color: #f8f9fa; color: #6c757d;">
+                                {{ baby.name }}
+                            </div>
+                            <small class="form-text">当前正在为 {{ baby.name }} {% if is_new %}添加{% else %}编辑{% endif %}里程碑事件</small>
+                        </div>
+                    </div>
+                    {% endif %}
+<!-- 事件信息 -->
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-info-circle"></i>
+                            事件信息
+                        </h4>
+
+                        <!-- 事件类型 -->
+                        <div class="form-group">
+                            <label for="{{ form.type.id_for_label }}" class="form-label">
+                                {{ form.type.label }}
+                            </label>
+                            {{ form.type }}
+                            {% if form.type.errors %}
+                                <div class="error-message">
+                                    {{ form.type.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text">选择事件对应的里程碑类型（可选）</small>
+                        </div>
+
+
+
+                        <!-- 事件标题 -->
+                        <div class="form-group">
+                            <label for="{{ form.title.id_for_label }}" class="form-label required">
+                                {{ form.title.label }}
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="error-message">
+                                    {{ form.title.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text">简明扼要地描述这个事件（如"第一次翻身"）</small>
+                        </div>
+
+                        <!-- 发生日期 -->
+                        <div class="form-group">
+                            <label for="{{ form.happen_date.id_for_label }}" class="form-label required">
+                                {{ form.happen_date.label }}
+                            </label>
+                            {{ form.happen_date }}
+                            {% if form.happen_date.errors %}
+                                <div class="error-message">
+                                    {{ form.happen_date.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text">记录事件发生的具体日期</small>
+                        </div>
+                    </div>
+
+                    <!-- 事件描述 -->
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-align-left"></i>
+                            事件描述
+                        </h4>
+
+                        <!-- 详细描述 -->
+                        <div class="form-group">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                {{ form.description.label }}
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="error-message">
+                                    {{ form.description.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text">详细描述事件的经过、宝宝的反应等（可选）</small>
+                        </div>
+                    </div>
+
+                    <!-- 照片上传 -->
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            相关照片
+                        </h4>
+
+                        <div class="photo-upload-area" onclick="document.getElementById('{{ form.photos.id_for_label }}').click()">
+                            <div class="photo-upload-text">点击上传照片</div>
+                            <div class="photo-upload-hint">支持PNG, JPG, GIF文件，或将文件拖放到此处</div>
+                        </div>
+
+                        <input id="{{ form.photos.id_for_label }}" name="{{ form.photos.html_name }}" type="file" multiple class="form-control" accept="image/*" style="display: none;">
+
+                        {% if form.photos.errors %}
+                            <div class="error-message">
+                                {{ form.photos.errors }}
+                            </div>
+                        {% endif %}
+
+                        <!-- 已选照片预览 -->
+                        <div id="photo-preview" class="photo-preview-container">
+                            <!-- 照片预览将通过JavaScript动态添加 -->
+                        </div>
+                    </div>
+
+                    <!-- 提交按钮 -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit">
+
+                            {% if is_new %}添加事件{% else %}更新事件{% endif %}
+                        </button>
+                        <a href="{% url 'main:event_list' %}" class="btn-cancel">
+
+                            取消
+                        </a>
+                    </div>
+
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 装饰元素 -->
+<div class="decoration decoration-1"></div>
+<div class="decoration decoration-2"></div>
+{% endblock %}
+
+{% block script %}
+<script>
+    // 为表单字段添加样式
+    document.addEventListener('DOMContentLoaded', function() {
+        // 处理文本输入框和选择框样式
+        const textInputs = document.querySelectorAll('input[type="text"], input[type="date"], select, textarea');
+        textInputs.forEach(input => {
+            input.classList.add('form-control');
+        });
+
+        // 照片预览功能
+        const photoInput = document.getElementById('{{ form.photos.id_for_label }}');
+        const previewContainer = document.getElementById('photo-preview');
+        const dropArea = document.querySelector('.photo-upload-area');
+
+        photoInput.addEventListener('change', function(e) {
+            // 清空现有预览
+            previewContainer.innerHTML = '';
+
+            // 如果有选中的文件，显示预览容器
+            if (this.files.length > 0) {
+                // 为每个文件创建预览
+                Array.from(this.files).forEach(file => {
+                    const reader = new FileReader();
+
+                    reader.onload = function(event) {
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'photo-preview';
+
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        img.alt = '预览图';
+
+                        const removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.className = 'photo-remove';
+                        removeBtn.innerHTML = '<i class="glyphicon glyphicon-remove-sign"></i>';
+
+                        // 简单的移除功能（实际应用中可能需要更复杂的逻辑）
+                        removeBtn.addEventListener('click', function() {
+                            previewDiv.remove();
+                        });
+
+                        previewDiv.appendChild(img);
+                        previewDiv.appendChild(removeBtn);
+                        previewContainer.appendChild(previewDiv);
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+            }
+        });
+
+        // 拖放功能
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropArea.style.backgroundColor = 'rgba(179, 224, 255, 0.3)';
+            dropArea.style.borderColor = 'var(--accent-color)';
+        }
+
+        function unhighlight() {
+            dropArea.style.backgroundColor = 'rgba(179, 224, 255, 0.1)';
+            dropArea.style.borderColor = 'var(--baby-blue)';
+        }
+
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length) {
+                photoInput.files = files;
+                // 触发change事件以更新预览
+                const event = new Event('change');
+                photoInput.dispatchEvent(event);
+            }
+        }
+    });
+</script>
+{% endblock %}

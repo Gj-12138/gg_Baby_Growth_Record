@@ -1,72 +1,386 @@
 {% extends 'base/base.html' %}
+{% block style %}
+<style>
+    :root {
+        --baby-blue: #b3e0ff;
+        --baby-pink: #ffd1dc;
+        --soft-white: #fff9fb;
+        --light-gray: #f8f9fa;
+        --text-dark: #4a4a4a;
+        --accent-color: #6ec5e9;
+        --medical-green: #a8e6cf;
+        --medical-blue: #b3e0ff;
+        --warning-color: #ffc107;
+        --danger-color: #ff6b6b;
+    }
+
+    .user-management-container {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        min-height: calc(100vh - 70px);
+        padding: 30px 0;
+    }
+
+    .user-management-panel {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-out;
+        margin: 0 auto;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-heading {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        color: var(--text-dark);
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: none;
+    }
+
+    .panel-heading h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .panel-body {
+        padding: 30px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(179, 224, 255, 0.5);
+    }
+
+    .page-title h2 {
+        color: var(--text-dark);
+        margin: 0;
+        font-weight: 600;
+    }
+
+    /* 表格样式 */
+    .user-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .user-table thead {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        color: white;
+    }
+
+    .user-table th {
+        padding: 15px 12px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 15px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .user-table td {
+        padding: 12px;
+        border-bottom: 1px solid rgba(179, 224, 255, 0.3);
+        vertical-align: middle;
+    }
+
+    .user-table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .user-table tbody tr:hover {
+        background-color: rgba(179, 224, 255, 0.1);
+    }
+
+    .user-table tbody tr:nth-child(even) {
+        background-color: rgba(179, 224, 255, 0.05);
+    }
+
+    .user-table tbody tr:nth-child(even):hover {
+        background-color: rgba(179, 224, 255, 0.15);
+    }
+
+    .avatar-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--baby-blue);
+    }
+
+    /* 状态指示器 */
+    .status-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background-color: var(--medical-green);
+        color: #2e7d32;
+    }
+
+    .status-inactive {
+        background-color: #ffcdd2;
+        color: #c62828;
+    }
+
+    /* 按钮样式 */
+    .btn-action {
+        border: none;
+        border-radius: 20px;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, #ffd54f 0%, #ffb300 100%);
+        color: white;
+    }
+
+    .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 181, 0, 0.4);
+        color: white;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #ff8a80 0%, #ff5252 100%);
+        color: white;
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 82, 82, 0.4);
+        color: white;
+    }
+
+    /* 分页样式 */
+    .pagination-container {
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .pagination {
+        display: inline-flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border-radius: 25px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-item {
+        margin: 0;
+    }
+
+    .page-link {
+        padding: 10px 15px;
+        background-color: white;
+        color: var(--text-dark);
+        text-decoration: none;
+        border: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        color: white;
+    }
+
+    .page-item:not(.active):not(.disabled) .page-link:hover {
+        background-color: rgba(179, 224, 255, 0.3);
+    }
+
+    .page-item.disabled .page-link {
+        background-color: #f5f5f5;
+        color: #bdbdbd;
+        cursor: not-allowed;
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: fixed;
+        z-index: 0;
+    }
+
+    .decoration-1 {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 209, 220, 0.3);
+        border-radius: 50%;
+        top: 20%;
+        left: 5%;
+    }
+
+    .decoration-2 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 50%;
+        bottom: 20%;
+        right: 5%;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 992px) {
+        .user-table {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .decoration-1, .decoration-2 {
+            display: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .user-management-container {
+            padding: 20px 0;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .btn-action {
+            display: block;
+            margin-bottom: 5px;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block body %}
-<h2>用户管理</h2>
-<table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>头像</th><th>用户名</th><th>邮箱</th><th>是否激活</th>
-      <th>加入时间</th><th>最后登录</th><th>操作</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for u in users %}
-    <tr>
-      <td><img src="{{ u.avatar.url }}" alt="" width="40" height="40" class="rounded-circle"></td>
-      <td>{{ u.username }}</td>
-      <td>{{ u.email|default:"-" }}</td>
-      <td>{{ u.is_active|yesno:"是,否" }}</td>
-      <td>{{ u.date_joined|date:"Y-m-d H:i" }}</td>
-      <td>{{ u.last_login|date:"Y-m-d H:i"|default:"-" }}</td>
-      <td>
-{#        <a class="btn btn-sm btn-warning" href="{% url 'user:update' u.pk %}">编辑</a>#}
-{#        <a class="btn btn-sm btn-danger" href="{% url 'user:delete' u.pk %}">删除</a>        #}
-          <a class="btn btn-sm btn-warning"  >恢复默认</a>
-          <a class="btn btn-sm btn-danger"  >删除</a>
-      </td>
-    </tr>
-  {% endfor %}
-  </tbody>
+<div class="user-management-container">
+    <div class="container">
+        <div class="user-management-panel">
+            <div class="panel-heading">
+                <h2 class="text-center">
+                   用户管理
+                </h2>
+                <p class="text-center">管理系统中的所有用户账户</p>
+            </div>
+            <div class="panel-body">
+                <!-- 页面标题 -->
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>用户管理</h2>
+                    </div>
+                </div>
 
-</table>
+                <!-- 用户表格 -->
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>头像</th>
+                            <th>用户名</th>
+                            <th>邮箱</th>
+                            <th>是否激活</th>
+                            <th>加入时间</th>
+                            <th>最后登录</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for u in users %}
+                        <tr>
+                            <td><img src="{{ u.avatar.url }}" alt="" class="avatar-img"></td>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.email|default:"-" }}</td>
+                            <td>
+                                {% if u.is_active %}
+                                    <span class="status-badge status-active">是</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">否</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ u.date_joined|date:"Y-m-d H:i" }}</td>
+                            <td>{{ u.last_login|date:"Y-m-d H:i"|default:"-" }}</td>
+                            <td>
+                                <a class="btn-action btn-warning">恢复默认</a>
+                                <a class="btn-action btn-danger">删除</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
 
+                <!-- 分页 -->
+                {% if is_paginated %}
+                <div class="pagination-container">
+                    <nav>
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">上一页</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link">上一页</a>
+                            </li>
+                            {% endif %}
 
-     {% if is_paginated %}
-    <nav style="text-align: center">
-      <ul class="pagination">
-        {% if page_obj.has_previous %}
-          <li class="page-item ">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">上一页</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <a class="page-link" >上一页</a>
-          </li>
-        {% endif %}
-        {% for page in paginator.page_range %}
-            {% if page == page_obj.number %}
-            	<li class="page-item disabled">
-                  <a class="page-link " href="?page={{ page }}">{{ page }}</a>
-                </li>
-            {% else %}
-                <li class="page-item active">
-                  <a class="page-link " href="?page={{ page }}">{{ page }}</a>
-                </li>
-            {% endif %}
+                            {% for page in paginator.page_range %}
+                                {% if page == page_obj.number %}
+                                <li class="page-item active">
+                                    <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
 
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">下一页</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link">下一页</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 
-
-        {% endfor %}
-
-        {% if page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">下一页</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <a class="page-link" >下一页</a>
-          </li>
-        {% endif %}
-      </ul>
-    </nav>
-  {% endif %}
+<!-- 装饰元素 -->
+<div class="decoration decoration-1"></div>
+<div class="decoration decoration-2"></div>
 {% endblock %}

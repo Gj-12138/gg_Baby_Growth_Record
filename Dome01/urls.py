@@ -28,5 +28,5 @@ urlpatterns = [
     path(f'media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT}),
 
     path('captcha/', include('captcha.urls')),
-
+    path('search/', include('haystack.urls')),
 ]

@@ -1,0 +1,437 @@
+{% extends 'base/base.html' %}
+{% load template_tags_filters %}
+
+{% block title %}{{ object.title }} - 宝宝成长记录{% endblock %}
+
+{% block style %}
+<style>
+    :root {
+        --baby-blue: #b3e0ff;
+        --baby-pink: #ffd1dc;
+        --soft-white: #fff9fb;
+        --light-gray: #f8f9fa;
+        --text-dark: #4a4a4a;
+        --accent-color: #6ec5e9;
+        --medical-green: #a8e6cf;
+        --medical-blue: #b3e0ff;
+    }
+
+    .record-detail-container {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        min-height: calc(100vh - 70px);
+        padding: 30px 0;
+    }
+
+    .record-detail-panel {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-out;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-heading {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        color: var(--text-dark);
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: none;
+    }
+
+    .panel-heading h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .panel-body {
+        padding: 30px;
+    }
+
+    /* 返回按钮 */
+    .btn-back {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .btn-back:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+        color: white;
+    }
+
+    /* 记录基本信息 */
+    .record-header {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(179, 224, 255, 0.5);
+    }
+
+    .record-title {
+        color: var(--text-dark);
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .record-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background-color: rgba(179, 224, 255, 0.2);
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+        color: var(--text-dark);
+    }
+
+    .meta-item i {
+        color: var(--accent-color);
+    }
+
+    /* 内容区域 */
+    .content-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: rgba(179, 224, 255, 0.1);
+        border-radius: 12px;
+        border-left: 4px solid var(--accent-color);
+    }
+
+    .section-title {
+        color: var(--text-dark);
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title i {
+        color: var(--accent-color);
+    }
+
+    .record-content {
+        font-size: 16px;
+        line-height: 1.8;
+        color: var(--text-dark);
+    }
+
+    /* 语音区域 */
+    .voice-section {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: rgba(179, 224, 255, 0.2);
+        border-radius: 8px;
+    }
+
+    .voice-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .voice-title i {
+        color: var(--accent-color);
+    }
+
+    .voice-player {
+        width: 100%;
+        border-radius: 8px;
+    }
+
+    /* 照片区域 */
+    .photos-section {
+        margin-top: 30px;
+    }
+
+    .photos-title {
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .photos-title i {
+        color: var(--accent-color);
+    }
+
+    .photos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .photo-item {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .photo-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .photo-img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+    }
+
+    .photo-description {
+        padding: 8px;
+        font-size: 12px;
+        color: var(--text-dark);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background-color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* 照片预览弹窗 */
+    .photo-preview {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .photo-preview img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+    }
+
+    .photo-preview button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: white;
+        font-size: 24px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        z-index: 10000;
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: fixed;
+        z-index: 0;
+    }
+
+    .decoration-1 {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 209, 220, 0.3);
+        border-radius: 50%;
+        top: 20%;
+        left: 10%;
+    }
+
+    .decoration-2 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 50%;
+        bottom: 20%;
+        right: 10%;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .record-detail-container {
+            padding: 20px 0;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .decoration-1, .decoration-2 {
+            display: none;
+        }
+
+        .record-meta {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .photos-grid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="record-detail-container">
+    <div class="container">
+        <div class="record-detail-panel">
+            <div class="panel-heading">
+                <h2 class="text-center">
+                    <i class="fa fa-line-chart"></i> 宝宝成长记录详情
+                </h2>
+                <p class="text-center">记录宝宝成长的每一个珍贵瞬间</p>
+            </div>
+            <div class="panel-body">
+                <!-- 返回按钮 -->
+                <a href="javascript:history.back();" class="btn-back">
+                    <i class="fa fa-arrow-left"></i> 返回
+                </a>
+
+                <!-- 记录基本信息 -->
+                <div class="record-header">
+                    <h1 class="record-title">{{ object.title }}</h1>
+                    <div class="record-meta">
+                        <span class="meta-item">
+                            <i class="fa fa-user"></i>
+                            记录者：{{ object.author.username }}
+                        </span>
+                        <span class="meta-item">
+                            <i class="fa fa-child"></i>
+                            宝宝：{{ object.baby.name }}（{{ object.baby.age_in_months|default:0 }}月龄）
+                        </span>
+                        <span class="meta-item">
+                            <i class="fa fa-folder-open"></i>
+                            分类：{{ object.get_category_display }}
+                        </span>
+                        <span class="meta-item">
+                            <i class="fa fa-calendar"></i>
+                            记录日期：{{ object.record_date|date:"Y年m月d日" }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 正文内容 -->
+                <div class="content-section">
+                    <h4 class="section-title">
+                        <i class="fa fa-file-text-o"></i> 正文内容
+                    </h4>
+                    <div class="record-content">
+                        {{ object.content|safe }}
+                    </div>
+
+                    <!-- 语音补充（若有语音） -->
+                    {% if object.voice %}
+                        <div class="voice-section">
+                            <div class="voice-title">
+                                <i class="fa fa-volume-up"></i> 语音补充
+                            </div>
+                            <audio controls class="voice-player">
+                                <source src="{{ object.voice.url }}" type="audio/mpeg">
+                                您的浏览器不支持音频播放
+                            </audio>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 关联照片 -->
+                {% with photos=object.related_photos.all %}
+                    {% if photos %}
+                        <div class="photos-section">
+                            <h4 class="photos-title">
+                                <i class="fa fa-camera"></i> 关联照片（共{{ photos|length }}张）
+                            </h4>
+                            <div class="photos-grid">
+                                {% for photo in photos %}
+                                    <div class="photo-item">
+                                        <img
+                                            src="{{ photo.thumbnail.url|default:photo.file.url }}"
+                                            alt="{{ photo.description|default:'宝宝照片' }}"
+                                            class="photo-img"
+                                            title="{{ photo.description|default:'点击查看大图' }}"
+                                        >
+                                        {% if photo.description %}
+                                            <div class="photo-description" title="{{ photo.description }}">
+                                                {{ photo.description }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 装饰元素 -->
+<div class="decoration decoration-1"></div>
+<div class="decoration decoration-2"></div>
+{% endblock %}
+
+{% block script %}
+<script>
+$(document).ready(function() {
+    // 照片预览放大（点击照片弹出预览）
+    $('.photo-item img').click(function() {
+        const imgSrc = $(this).attr('src');
+        // 关键修复：给弹窗添加 .photo-preview 类，确保选择器能匹配
+        const previewHtml = `
+            <div class="photo-preview" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center;">
+                <img src="${imgSrc}" style="max-width: 90%; max-height: 90%; object-fit: contain;" alt="照片预览">
+                <!-- 关闭按钮：保留原样式，确保在弹窗内 -->
+                <button style="position: absolute; top: 20px; right: 20px; color: white; font-size: 24px; background: transparent; border: none; cursor: pointer; z-index: 10000;">×</button>
+            </div>
+        `;
+        $('body').append(previewHtml).css('overflow', 'hidden');
+
+        // 选择器匹配 .photo-preview 下的 button（直接绑定到新创建的弹窗，避免事件委托延迟）
+        $('.photo-preview button').click(function() {
+            $('.photo-preview').remove(); // 移除弹窗
+            $('body').css('overflow', 'auto'); // 恢复页面滚动
+        });
+
+        // 点击弹窗背景也关闭预览
+        $('.photo-preview').click(function(e) {
+            // 当点击的是背景时关闭
+            if (e.target === this) {
+                $(this).remove();
+                $('body').css('overflow', 'auto');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

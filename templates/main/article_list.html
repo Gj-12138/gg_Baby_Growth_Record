@@ -2,17 +2,131 @@
 {% load template_tags_filters %}
 
 {% block title %}
-    文章
+    文章 - 宝宝成长记录
 {% endblock %}
+
 {% block style %}
 <style>
-
-    /* 统一内容预览样式，避免富文本格式混乱 */
-    .article-preview {
-        font-size: 13px;
-        color: #555;
-        line-height: 1.5;
+    :root {
+        --baby-blue: #b3e0ff;
+        --baby-pink: #ffd1dc;
+        --soft-white: #fff9fb;
+        --light-gray: #f8f9fa;
+        --text-dark: #4a4a4a;
+        --accent-color: #6ec5e9;
     }
+
+    .articles-container {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        min-height: calc(100vh - 70px);
+        padding: 30px 0;
+    }
+
+    .articles-content {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .articles-panel {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-out;
+        margin-bottom: 30px;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-heading {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        color: var(--text-dark);
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: none;
+    }
+
+    .panel-heading h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .panel-body {
+        padding: 30px;
+    }
+
+    .article-card {
+        background: var(--soft-white);
+        border-radius: 12px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .article-header {
+        padding: 15px 20px;
+        background-color: rgba(179, 224, 255, 0.1);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .article-author {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--text-dark);
+        font-size: 14px;
+    }
+
+    .article-author span:first-child {
+        font-weight: 500;
+    }
+    .article-author span>img {
+        border-radius: 20px;
+        width: 25px;
+        height: 25px;
+    }
+    .article-time {
+        color: #888;
+        font-size: 12px;
+    }
+
+    .article-body {
+        padding: 20px;
+    }
+
+    .article-title {
+        margin: 0 0 15px 0;
+    }
+
+    .article-title a {
+        color: var(--text-dark);
+        text-decoration: none;
+        font-size: 20px;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .article-title a:hover {
+        color: var(--accent-color);
+    }
+
+    .article-preview {
+        font-size: 14px;
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+
     .article-preview img {
         max-width: 100%;
         max-height: 180px;
@@ -22,183 +136,390 @@
         border: 1px solid #eee;
         object-fit: contain;
     }
-    /* 搜索结果提示样式 */
-    .search-tip {
-        padding: 15px;
-        margin-bottom: 24px;
-        background-color: #f8f9fa;
-        border-left: 4px solid #0d6efd;
-        border-radius: 4px;
+
+    .article-footer {
+        padding: 15px 20px;
+        background-color: rgba(248, 249, 250, 0.6);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
-    /* 卡片hover效果，增强交互感 */
-    .panel-default {
-        transition: box-shadow 0.3s ease;
+
+    .article-stats {
+        display: flex;
+        gap: 20px;
     }
-    .panel-default:hover {
-        box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-    }
-    /* 阅读全文按钮样式 */
-    .read-more {
-        display: inline-block;
-        margin-top: 8px;
-        color: #0d6efd;
-        text-decoration: none;
+
+    .stat-item {
+        color: #666;
         font-size: 13px;
     }
-    .read-more:hover {
-        color: #0a58ca;
+
+    .stat-item i {
+        margin-right: 5px;
+        color: var(--accent-color);
+    }
+
+    .read-more-btn {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 6px 16px;
+        font-size: 13px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .read-more-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+        color: white;
+    }
+
+    .search-tip {
+        padding: 20px;
+        margin-bottom: 24px;
+        background-color: rgba(179, 224, 255, 0.2);
+        border-left: 4px solid var(--accent-color);
+        border-radius: 8px;
+    }
+
+    .search-tip h4 {
+        margin: 0 0 8px 0;
+        color: var(--text-dark);
+    }
+
+    .search-tip p {
+        margin: 0;
+        color: #666;
+    }
+
+    .search-tip a {
+        margin-top: 8px;
+        display: inline-block;
+        color: var(--accent-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .search-tip a:hover {
         text-decoration: underline;
+    }
+
+    .categories-filter {
+        margin-bottom: 20px;
+        padding: 15px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .categories-filter span {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .category-link {
+        padding: 6px 12px;
+        border-radius: 20px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    }
+
+    .category-link.active {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        color: white;
+    }
+
+    .category-link:not(.active) {
+        background-color: rgba(179, 224, 255, 0.3);
+        color: var(--text-dark);
+    }
+
+    .category-link:not(.active):hover {
+        background-color: rgba(179, 224, 255, 0.5);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background-color: rgba(179, 224, 255, 0.1);
+        border-radius: 12px;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        color: var(--baby-blue);
+        margin-bottom: 20px;
+    }
+
+    .empty-state h4 {
+        color: var(--text-dark);
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .empty-state p {
+        color: #666;
+        margin-bottom: 0;
+    }
+
+    .pagination-baby {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .pagination-baby .page-item .page-link {
+        color: var(--accent-color);
+        border: 1px solid var(--baby-blue);
+        margin: 0 3px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        padding: 8px 15px;
+    }
+
+    .pagination-baby .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border-color: var(--accent-color);
+        color: white;
+    }
+
+    .pagination-baby .page-item .page-link:hover {
+        background-color: var(--baby-blue);
+        color: var(--text-dark);
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: fixed;
+        z-index: 0;
+    }
+
+    .decoration-1 {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 209, 220, 0.3);
+        border-radius: 50%;
+        top: 20%;
+        left: 10%;
+    }
+
+    .decoration-2 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 50%;
+        bottom: 20%;
+        right: 10%;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .articles-container {
+            padding: 20px 0;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .decoration-1, .decoration-2 {
+            display: none;
+        }
+
+        .article-footer {
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .categories-filter {
+            justify-content: center;
+        }
     }
 </style>
 {% endblock %}
 
-
-
 {% block body %}
-    <!-- 容器：限制宽度+居中，增加顶部间距 -->
-    <div class="container" style="max-width: 1200px; margin-top: 30px;">
-        <h3 style="margin-bottom: 25px; font-weight: normal;">社区内容</h3>
-        {% if query %}
-            <div class="search-tip">
-                <h4 style="margin: 0 0 8px 0;">搜索结果</h4>
-                <p style="margin: 0; color: #666;">
-                    为你找到包含「{{ query }}」的 {{ articles.count }} 篇文章
-                </p>
-                <!-- 搜索重置按钮 -->
-                <a href="{% url 'main:article_list' %}" style="margin-top: 8px; display: inline-block;">
-                    清除搜索，返回全部文章
-                </a>
+<div class="articles-container">
+    <div class="articles-content">
+        <div class="articles-panel">
+            <div class="panel-heading">
+                <h2 class="text-center">
+                    <i class="fa fa-comments"></i> 宝宝社区
+                </h2>
+                <p class="text-center">分享育儿经验，记录宝宝成长点滴</p>
             </div>
-        {% endif %}
-        <!-- 循环渲染每篇文章为“卡片面板” -->
-        {% if all_categories %}
-            <div style="margin-bottom: 20px; padding: 10px 0; border-bottom: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 10px;">
-                <span style="color: #666; align-self: center;">分类：</span>
-                <!-- 全部分类：选中时高亮，且保留搜索关键词 -->
-                <a
-                    href="?query={{ query|default:'' }}"
-                    style="padding: 4px 10px; border-radius: 3px; text-decoration: none; {% if category == 'all' %}background-color: #0d6efd; color: white;{% else %}color: #333;{% endif %}"
-                >
-                    全部
-                </a>
-                <!-- 遍历所有分类：每个分类链接携带当前搜索关键词 -->
-                {% for cate in all_categories %}
-                    <a
-                        href="?category={{ cate.id }}&query={{ query|default:'' }}"
-                        style="padding: 4px 10px; border-radius: 3px; text-decoration: none; {% if category == cate.id|stringformat:'i' %}background-color: #0d6efd; color: white;{% else %}color: #333;{% endif %}"
-                    >
-                        {{ cate.classification }}
-                    </a>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% if articles %}
-    	 {% for article in articles %}
-            <div class="panel panel-default" style="margin-bottom: 24px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-
-                <!-- 作者信息 -->
-                 <div class="panel-heading" style="padding: 10px 15px; background-color: #f8f9fa;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #666;">作者: {{ article.author.username }}</span>
-                            <!-- 新增：文章发布时间 -->
-                            <span style="color: #999; font-size: 12px;">
-                                {{ article.create_time|date:"Y-m-d H:i" }}
-                            </span>
-                        </div>
-                 </div>
-
-                <!-- 文章标题 -->
-                    <div class="panel-body" style="padding: 12px 15px; padding-bottom: 0;">
-                        <h4 style="margin: 0 0 10px 0;">
-                            <a href="{% url 'main:article_detail' article.id %}"
-                               style="color: #333; text-decoration: none; font-size: 18px;">
-                                {{ article.title }}
-                            </a>
-                        </h4>
+            <div class="panel-body">
+                <!-- 搜索提示 -->
+                {% if query %}
+                    <div class="search-tip">
+                        <h4>搜索结果</h4>
+                        <p>当前页面为你找到包含「{{ query }}」的 {{ articles.count }} 篇文章</p>
+                        <a href="{% url 'main:article_list' %}">
+                             清除搜索，返回全部文章
+                        </a>
                     </div>
-                <!-- 文章内容摘要（保留统一缩小样式+新增阅读全文） -->
-                    <div class="panel-body" style="padding: 0 15px 12px; line-height: 1.6;">
-                        <div class="article-preview">
-                            {{ article.content|safe_truncate }}
-                            <!-- 新增：阅读全文按钮，引导进入详情页 -->
-                            <a href="{% url 'main:article_detail' article.id %}" class="read-more">
-                                阅读全文 →
+                {% endif %}
+
+                <!-- 分类筛选 -->
+                {% if all_categories %}
+                    <div class="categories-filter">
+                        <span>分类：</span>
+                        <!-- 全部分类 -->
+                        <a href="?query={{ query|default:'' }}"
+                           class="category-link {% if category == 'all' %}active{% endif %}">
+                            全部
+                        </a>
+                        <!-- 遍历所有分类 -->
+                        {% for cate in all_categories %}
+                            <a href="?category={{ cate.id }}&query={{ query|default:'' }}"
+                               class="category-link {% if category == cate.id|stringformat:'i' %}active{% endif %}">
+                                {{ cate.classification }}
                             </a>
-                        </div>
+                        {% endfor %}
                     </div>
-                <!-- 文章互动数据栏 -->
-                    <div class="panel-footer" style="padding: 10px 15px; background-color: #fafafa; border-top: 1px solid #eee; display: flex; gap: 20px;">
-                        <span style="color: #999; font-size: 12px;">
-                            <i class="glyphicon glyphicon-eye-open"></i> {{ article.views|default:0 }} 阅读
-                        </span>
-                        <span style="color: #999; font-size: 12px;">
-                            <i class="glyphicon glyphicon-comment"></i> {{ article.comment_count|default:0 }} 评论
-                        </span>
-                        <span style="color: #999; font-size: 12px;">
-                            <i class="glyphicon glyphicon-star"></i> {{ article.collect_count|default:0 }} 收藏
-                        </span>
-                    </div>
-
-            </div>
-        {% endfor %}
-    {% else %}
-        <div style="text-align: center; padding: 60px 0; background-color: #f8f9fa; border-radius: 6px;">
-                <h4 style="color: #666; margin: 0 0 10px 0;">暂无相关文章</h4>
-                <p style="color: #999; margin: 0;">
-                    {% if query %}
-                        换个关键词搜索试试吧~
-                    {% else %}
-                        暂无文章发布，期待你的分享！
-                    {% endif %}
-                </p>
-        </div>
-
-    {% endif %}
-
-
-        <!-- 分页组件 -->
-        {% if is_paginated %}
-            <nav style="text-align: center; margin-top: 30px;">
-                <ul class="pagination">
-                    {% if page_obj.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
-                                上一页
+                {% endif %}
+                <!-- 标签筛选 -->
+                {% if all_tags %}
+                    <div class="categories-filter">
+                        <span> 标签：</span>
+                        <!-- 全部分类 -->
+                        <a href="{% url 'main:article_list' %}?query={{ query|default:'' }}"
+                           class="category-link {% if tag == 'all' %}active{% endif %}">
+                            全部
+                        </a>
+                        <!-- 遍历所有标签 -->
+                        {% for ta in all_tags %}
+                            <a href="{% url 'main:article_list' %}?tag={{ ta.id }}&query={{ query|default:'' }}"
+                               class="category-link {% if tag == ta.id|stringformat:'i' %}active{% endif %}">
+                                {{ ta.tag }}
                             </a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <a class="page-link">上一页</a>
-                        </li>
-                    {% endif %}
-                    {% for page in paginator.page_range %}
-                        {% if page == page_obj.number %}
-                            <li class="page-item active" style="background-color: lightblue;">
-                                <a class="page-link" href="?page={{ page }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
-                                    {{ page }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <!-- 文章列表 -->
+                {% if articles %}
+                    {% for article in articles %}
+                        <div class="article-card">
+                            <!-- 作者信息 -->
+                            <div class="article-header">
+                                <div class="article-author">
+                                    <span> 作者:<img src="{{ article.author.avatar.url }}" alt="" > {{ article.author.username }}</span>
+                                    <span class="article-time">
+                                         {{ article.create_time|date:"Y-m-d H:i" }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- 文章内容 -->
+                            <div class="article-body">
+                                <h3 class="article-title">
+                                    <a href="{% url 'main:article_detail' article.id %}">
+                                        {{ article.title }}
+                                    </a>
+                                </h3>
+                                <div class="article-preview">
+                                    {{ article.content|safe_truncate }}
+                                </div>
+                            </div>
+
+                            <!-- 文章互动数据 -->
+                            <div class="article-footer">
+                                <div class="article-stats">
+                                    <span class="stat-item">
+                                        <i class="glyphicon glyphicon-eye-open"></i> {{ article.views|default:0 }} 阅读
+                                    </span>
+                                    <span class="stat-item">
+                                        <i class="glyphicon glyphicon-comment"></i> {{ article.comment_count|default:0 }} 评论
+                                    </span>
+                                    <span class="stat-item">
+                                        <i class="glyphicon glyphicon-star"></i> {{ article.collect_count|default:0 }} 收藏
+                                    </span>
+                                    <span class="stat-item">
+                                        <i class="glyphicon glyphicon glyphicon-thumbs-up"></i> {{ article.collect_count|default:0 }} 点赞
+                                    </span>
+                                </div>
+                                <a href="{% url 'main:article_detail' article.id %}" class="read-more-btn">
+                                    <i class="fa fa-book"></i> 阅读全文
                                 </a>
-                            </li>
-                        {% else %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
-                                    {{ page }}
-                                </a>
-                            </li>
-                        {% endif %}
+                            </div>
+                        </div>
                     {% endfor %}
-                    {% if page_obj.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
-                                下一页
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <a class="page-link">下一页</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </nav>
-        {% endif %}
+                {% else %}
+                    <!-- 空状态 -->
+                    <div class="empty-state">
+                        <i class="fa fa-file-text-o"></i>
+                        <h4>暂无相关文章</h4>
+                        <p>
+                            {% if query %}
+                                换个关键词搜索试试吧~
+                            {% else %}
+                                暂无文章发布，期待你的分享！
+                            {% endif %}
+                        </p>
+                    </div>
+                {% endif %}
+
+                <!-- 分页组件 -->
+                {% if is_paginated %}
+                    <nav class="pagination-baby">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
+                                        <i class="fa fa-chevron-left"></i> 上一页
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link"><i class="fa fa-chevron-left"></i> 上一页</a>
+                                </li>
+                            {% endif %}
+
+                            {% for page in paginator.page_range %}
+                                {% if page == page_obj.number %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="?page={{ page }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
+                                            {{ page }}
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
+                                            {{ page }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&category={{ category }}{% if query %}&query={{ query }}{% endif %}">
+                                        下一页 <i class="fa fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link">下一页 <i class="fa fa-chevron-right"></i></a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            </div>
+        </div>
     </div>
+</div>
+
+<!-- 装饰元素 -->
+<div class="decoration decoration-1"></div>
+<div class="decoration decoration-2"></div>
 {% endblock %}

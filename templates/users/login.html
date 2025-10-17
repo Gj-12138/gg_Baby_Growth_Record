@@ -1,30 +1,260 @@
 {% extends 'base/base.html' %}
+{% load static %}
 
 {% block title %}
-    登录
+    登录 - 宝宝成长记录
+{% endblock %}
+
+{% block style %}
+<style>
+    :root {
+        --baby-blue: #b3e0ff;
+        --baby-pink: #ffd1dc;
+        --soft-white: #fff9fb;
+        --light-gray: #f8f9fa;
+        --text-dark: #4a4a4a;
+        --accent-color: #6ec5e9;
+    }
+
+    .login-container {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        min-height: calc(100vh - 70px);
+        display: flex;
+        align-items: center;
+        padding: 30px 0;
+    }
+
+    .login-panel {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-heading {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        color: var(--text-dark);
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: none;
+    }
+
+    .panel-heading h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .panel-heading p {
+        margin-bottom: 0;
+        opacity: 0.8;
+    }
+
+    .panel-body {
+        padding: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        color: var(--text-dark);
+        font-weight: 500;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        border-radius: 0 8px 8px 0;
+        border: 1px solid #e0e0e0;
+        padding: 12px 15px;
+        height: 46px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px rgba(110, 197, 233, 0.2);
+    }
+
+    .btn-login {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 25px;
+        color: white;
+        font-weight: 600;
+        padding: 12px;
+        margin-top: 10px;
+        transition: all 0.3s ease;
+        height: 50px;
+        font-size: 16px;
+    }
+
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+        background: linear-gradient(135deg, var(--accent-color) 0%, var(--baby-blue) 100%);
+    }
+
+    .register-link {
+        color: var(--accent-color);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .register-link:hover {
+        color: #4ca8d8;
+        text-decoration: none;
+    }
+
+    .alert {
+        border-radius: 10px;
+        border: none;
+        margin-top: 20px;
+    }
+
+    .alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: fixed;
+        z-index: 0;
+    }
+
+    .decoration-1 {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 209, 220, 0.3);
+        border-radius: 50%;
+        top: 20%;
+        left: 10%;
+    }
+
+    .decoration-2 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 50%;
+        bottom: 20%;
+        right: 10%;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .login-container {
+            padding: 20px 0;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .decoration-1, .decoration-2 {
+            display: none; /* 在小屏幕上隐藏装饰元素以节省空间 */
+        }
+    }
+</style>
 {% endblock %}
 
 {% block body %}
-        <div style="width: 600px">
-        <h3>登录</h3>
-        <form action="" method="post">
-            {% csrf_token %}
-             {{ login_form }}
-            <button type="submit">登录</button>
-            <a href="{% url 'users:register' %}"><button type="button">注册</button></a>
-        </form>
-        {% if login_form.errors %}
-          <script>
-            // 将错误文本合并成一句
-            const errList = [
-              {% for field, errs in login_form.errors.items %}
-                {% for e in errs %}
-                  "{{ e|escapejs }}",
-                {% endfor %}
-              {% endfor %}
-            ];
-            alert("提交失败！\n" + errList.join("\n"));
-          </script>
-        {% endif %}
+<div class="login-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="login-panel">
+                    <div class="panel-heading">
+                        <h2 class="text-center">
+                            <i class="fa fa-child"></i> 欢迎登录宝宝成长记录
+                        </h2>
+                        <p class="text-center">记录宝宝成长的每一个珍贵瞬间</p>
+                    </div>
+                    <div class="panel-body">
+                        <form action="" method="post" class="login-form">
+                            {% csrf_token %}
+
+                            <div class="form-group">
+                                <label for="id_username">
+                                     用户名 :
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-lock"></i>
+                                    </span>
+                                    <input type="text"
+                                           name="username"
+                                           id="id_username"
+                                           class="form-control"
+                                           placeholder="请输入用户名"
+                                           required
+                                           {% if login_form.username.value %}value="{{ login_form.username.value }}"{% endif %}>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_password">
+                                     密码 :
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-lock"></i>
+                                    </span>
+                                    <input type="password"
+                                           name="password"
+                                           id="id_password"
+                                           class="form-control"
+                                           placeholder="请输入密码"
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-login btn-block">
+                                    登录
+                                </button>
+                            </div>
+
+                            <div class="form-group text-center">
+                                <p>还没有账号？
+                                    <a href="{% url 'users:register' %}" class="register-link">
+                                        立即注册
+                                    </a>
+                                </p>
+                            </div>
+                        </form>
+
+                        {% if login_form.errors %}
+                        <div class="alert alert-warning alert-dismissible fade in" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            <h4><i class="fa fa-exclamation-triangle"></i> 登录失败</h4>
+                            <ul>
+                                {% for field, errors in login_form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
+
+<!-- 装饰元素 -->
+<div class="decoration decoration-1"></div>
+<div class="decoration decoration-2"></div>
 {% endblock %}

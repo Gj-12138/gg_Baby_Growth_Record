@@ -1,78 +1,432 @@
 {% extends 'base/base.html' %}
+{% load static %}
 
 {% block title %}
     {% if baby.nickname %}
-        {{ baby.nickname }} --- 宝宝
+        {{ baby.nickname }} - 宝宝详情 - 宝宝成长记录
     {% else  %}
-        {{ baby.name }} --- 宝宝
+        {{ baby.name }} - 宝宝详情 - 宝宝成长记录
     {% endif %}
 {% endblock %}
 
+{% block style %}
+<style>
+    :root {
+        --baby-blue: #b3e0ff;
+        --baby-pink: #ffd1dc;
+        --soft-white: #fff9fb;
+        --light-gray: #f8f9fa;
+        --text-dark: #4a4a4a;
+        --accent-color: #6ec5e9;
+        --medical-green: #a8e6cf;
+        --medical-blue: #b3e0ff;
+    }
+
+    .baby-detail-container {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        min-height: calc(100vh - 70px);
+        padding: 30px 0;
+    }
+
+    .baby-detail-panel {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-out;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-heading {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        color: var(--text-dark);
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: none;
+    }
+
+    .panel-heading h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .panel-body {
+        padding: 30px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(179, 224, 255, 0.5);
+    }
+
+    .page-title h3 {
+        color: var(--text-dark);
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .btn-add {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-add:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+        color: white;
+    }
+
+    /* 宝宝信息卡片 */
+    .baby-info-section {
+        margin-bottom: 30px;
+        padding: 25px;
+        background-color: rgba(179, 224, 255, 0.1);
+        border-radius: 12px;
+        border-left: 4px solid var(--accent-color);
+    }
+
+    .section-title {
+        color: var(--text-dark);
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title i {
+        color: var(--accent-color);
+    }
+
+    .baby-profile {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        margin-bottom: 20px;
+    }
+
+    .baby-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--baby-blue);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .baby-details {
+        flex: 1;
+    }
+
+    .baby-name {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 5px;
+    }
+
+    .baby-nickname {
+        font-size: 18px;
+        color: #666;
+        margin-bottom: 15px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+
+    .info-value {
+        color: #555;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    .info-value.highlight {
+        color: var(--accent-color);
+        font-weight: 500;
+    }
+
+    /* 操作按钮区域 */
+    .action-section {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #ffd166 0%, #ffb347 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 179, 71, 0.4);
+        color: white;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-delete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 154, 158, 0.4);
+        color: white;
+    }
+
+    /* 分页样式 */
+    .pagination-baby {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .pagination-baby .page-item .page-link {
+        color: var(--accent-color);
+        border: 1px solid var(--baby-blue);
+        margin: 0 3px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        padding: 8px 15px;
+    }
+
+    .pagination-baby .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border-color: var(--accent-color);
+        color: white;
+    }
+
+    .pagination-baby .page-item .page-link:hover {
+        background-color: var(--baby-blue);
+        color: var(--text-dark);
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: fixed;
+        z-index: 0;
+    }
+
+    .decoration-1 {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 209, 220, 0.3);
+        border-radius: 50%;
+        top: 20%;
+        left: 10%;
+    }
+
+    .decoration-2 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 50%;
+        bottom: 20%;
+        right: 10%;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .baby-detail-container {
+            padding: 20px 0;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .decoration-1, .decoration-2 {
+            display: none;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .baby-profile {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .action-section {
+            flex-direction: column;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block body %}
-        <div style="width: 600px">
-        <h3>婴儿</h3>
-<table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>头像</th><th>姓名</th><th>小名</th><th>出生日期</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><img src="{{ baby.avatar.url }}" alt="" width="40" height="40" class="rounded-circle"></td>
-      <td>{{ baby.name }}</td>
-      <td>{{ baby.nickname|default:"---" }}</td>
-      <td>{{ baby.birthday|date:"Y-m-d"|default:"---" }}</td>
-        <td>
-            <a class="btn btn-sm btn-warning" href="{% url 'users:baby_update' baby.id %}" >修改</a>
-            <a class="btn btn-sm btn-danger"  >删除</a>
-        </td>
+<div class="baby-detail-container">
+    <div class="container">
+        <div class="baby-detail-panel">
+            <div class="panel-heading">
+                <h2 class="text-center">
+                    <i class="fa fa-child"></i> 宝宝详情
+                </h2>
+                <p class="text-center">记录宝宝成长的每一个珍贵瞬间</p>
+            </div>
+            <div class="panel-body">
+                <!-- 页面标题和添加按钮 -->
+                <div class="page-header">
+                    <div class="page-title">
+                        <h3>宝宝详情</h3>
+                    </div>
+                    <a href="{% url 'users:baby_add' %}" class="btn-add">
+                        <i class="fa fa-plus"></i> 添加宝宝
+                    </a>
+                </div>
 
-    </tr>
+                <!-- 宝宝信息卡片 -->
+                <div class="baby-info-section">
+                    <h4 class="section-title">
+                        <i class="fa fa-user"></i> 宝宝信息
+                    </h4>
 
-  </tbody>
+                    <div class="baby-profile">
+                        <img src="{{ baby.avatar.url }}" alt="宝宝头像" class="baby-avatar">
+                        <div class="baby-details">
+                            <div class="baby-name">{{ baby.name }}</div>
+                            {% if baby.nickname %}
+                                <div class="baby-nickname">小名：{{ baby.nickname }}</div>
+                            {% endif %}
 
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">姓名</span>
+                                    <span class="info-value highlight">{{ baby.name }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">小名</span>
+                                    <span class="info-value">{{ baby.nickname|default:"---" }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">出生日期</span>
+                                    <span class="info-value">{{ baby.birthday|date:"Y-m-d"|default:"---" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-</table>
-  <a class="btn btn-sm btn-warning" href="{% url 'users:baby_add'%}"  >添加</a>
- {% if is_paginated %}
-    <nav style="text-align: center">
-      <ul class="pagination">
-        {% if page_obj.has_previous %}
-          <li class="page-item ">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">上一页</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <a class="page-link" >上一页</a>
-          </li>
-        {% endif %}
-        {% for page in paginator.page_range %}
-            {% if page == page_obj.number %}
-            	<li class="page-item disabled " style="background-color: lightblue">
-                  <a class="page-link " href="?page={{ page }}">{{ page }}</a>
-                </li>
-            {% else %}
-                <li class="page-item ">
-                  <a class="page-link " href="?page={{ page }}">{{ page }}</a>
-                </li>
-            {% endif %}
+                    <!-- 操作按钮 -->
+                    <div class="action-section">
+                        <a class="btn-edit" href="{% url 'users:baby_update' baby.id %}">
+                             修改信息
+                        </a>
+                        <a class="btn-delete" href="{% url 'users:baby_delete' baby.id %}">
+                            删除宝宝
+                        </a>
+                    </div>
+                </div>
 
+                <!-- 分页组件 -->
+                {% if is_paginated %}
+                    <nav class="pagination-baby">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                        <i class="fa fa-chevron-left"></i> 上一页
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link"><i class="fa fa-chevron-left"></i> 上一页</a>
+                                </li>
+                            {% endif %}
 
+                            {% for page in paginator.page_range %}
+                                {% if page == page_obj.number %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
 
-        {% endfor %}
-
-        {% if page_obj.has_next %}
-          <li class="page-item" >
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">下一页</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <a class="page-link" >下一页</a>
-          </li>
-        {% endif %}
-      </ul>
-    </nav>
-  {% endif %}
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                        下一页 <i class="fa fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link">下一页 <i class="fa fa-chevron-right"></i></a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- 装饰元素 -->
+<div class="decoration decoration-1"></div>
+<div class="decoration decoration-2"></div>
 {% endblock %}

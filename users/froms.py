@@ -2,10 +2,18 @@ from captcha.fields import CaptchaField
 from django import forms
 from django.contrib.auth.hashers import check_password
 
+from main.models import BabyParent
 from users.models import Baby, User
 
 
 class BabyAddForm(forms.ModelForm):
+    # 家长角色选择（默认妈妈）
+    parent_role = forms.ChoiceField(
+        choices=BabyParent.ROLE_CHOICES,
+        label="家长身份",
+        initial="mother",  # 默认妈妈
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
     class Meta:
         model = Baby
         fields = [
@@ -20,6 +28,7 @@ class BabyAddForm(forms.ModelForm):
             'blood_type',
             'allergies',
             'notes',
+            'parent_role',
         ]
         widgets = {
             'avatar': forms.ClearableFileInput(
@@ -195,9 +204,11 @@ class PasswordChangeForm(forms.Form):
         self.user.save(update_fields=['password'])
         return self.user
 
+
 class UserCenterChangeForm(forms.Form):
     username = forms.CharField( max_length = 100,label ='用户名',widget=forms.TextInput(attrs={'class': 'form-control'}))
     headerimg = forms.CharField(label="头像",widget=forms.FileInput(attrs={'class': 'form-control'}))
+
 
 class UserCenterForm(forms.Form):
     username = forms.CharField( max_length = 100,label ='用户名',widget=forms.TextInput(attrs={'class': 'form-control'}))

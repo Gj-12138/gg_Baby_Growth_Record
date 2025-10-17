@@ -1,82 +1,340 @@
 {% extends 'base/base.html' %}
+{% load static %}
 {% load template_tags_filters %}
 
 {% block title %}
-    用户中心
+    用户中心 - 宝宝成长记录
 {% endblock %}
-{% block style %}
-    <style>
-        #usercenterform input{
 
+{% block style %}
+<style>
+    :root {
+        --baby-blue: #b3e0ff;
+        --baby-pink: #ffd1dc;
+        --soft-white: #fff9fb;
+        --light-gray: #f8f9fa;
+        --text-dark: #4a4a4a;
+        --accent-color: #6ec5e9;
+        --medical-green: #a8e6cf;
+        --medical-blue: #b3e0ff;
+    }
+
+    .user-center-container {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        min-height: calc(100vh - 70px);
+        padding: 30px 0;
+    }
+
+    .user-center-panel {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-out;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-heading {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        color: var(--text-dark);
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: none;
+    }
+
+    .panel-heading h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .panel-body {
+        padding: 30px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(179, 224, 255, 0.5);
+    }
+
+    .page-title h3 {
+        color: var(--text-dark);
+        margin: 0;
+        font-weight: 600;
+    }
+
+
+
+    /* 表单样式 */
+    .form-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: rgba(179, 224, 255, 0.1);
+        border-radius: 12px;
+    }
+
+    .section-title {
+        color: var(--text-dark);
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 14px;
+        background-color: #f8f9fa;
+        color: #6c757d;
+    }
+
+    .form-control:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px rgba(110, 197, 233, 0.2);
+        outline: none;
+    }
+
+    /* 头像上传区域 */
+    .avatar-upload-area {
+        text-align: center;
+        padding: 20px;
+        border: 2px dashed var(--baby-blue);
+        border-radius: 12px;
+        background-color: rgba(179, 224, 255, 0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-bottom: 20px;
+    }
+
+    .avatar-upload-area:hover {
+        background-color: rgba(179, 224, 255, 0.2);
+        border-color: var(--accent-color);
+    }
+
+    .avatar-preview {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--baby-blue);
+        margin: 0 auto 15px;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .avatar-upload-text {
+        color: var(--text-dark);
+        margin-bottom: 5px;
+    }
+
+    .avatar-upload-hint {
+        color: #888;
+        font-size: 13px;
+    }
+
+    /* 分隔线 */
+    .divider {
+        height: 1px;
+        background-color: rgba(179, 224, 255, 0.5);
+        margin: 25px 0;
+    }
+
+    /* 按钮样式 */
+    .btn-edit {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 12px 24px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+        color: white;
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: fixed;
+        z-index: 0;
+    }
+
+    .decoration-1 {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 209, 220, 0.3);
+        border-radius: 50%;
+        top: 20%;
+        left: 10%;
+    }
+
+    .decoration-2 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 50%;
+        bottom: 20%;
+        right: 10%;
+    }
+
+    .avatar-input {
+        display: none;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .user-center-container {
+            padding: 20px 0;
         }
-        #avatar{
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 3px solid  lightgray;
-            background: url("/media/{{ request.user.avatar }}") no-repeat center;
-            background-size: cover;
-            padding-bottom: 20px;
-            {#background-image: url("");#}
+
+        .panel-body {
+            padding: 20px;
         }
-        #avatar input{
-            display: block;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
+
+        .decoration-1, .decoration-2 {
+            display: none;
         }
-    </style>
-{% endblock %}
-{% block script %}
-    <script>
-        window.onload = function (){
-            let head_input = document.querySelector("#avatar input");
-            let head = document.querySelector("#avatar")
-            head_input.onchange = function (){
-                const filrReader = new FileReader()
-                filrReader.onload = function (e){
-                    console.log(e.target.result)
-                    head.style.backgroundImage = `url(${e.target.result})`
-                }
-                filrReader.readAsDataURL(this.files[0])
-            }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
         }
-    </script>
+    }
+</style>
 {% endblock %}
 
 {% block body %}
-    <div style="width: 600px">
-        <div class="row-md-8">
-              <div class="col-md-8  col-md-offset-12 ">
-                    <h3>欢迎{{ request.user.username }}，来到用户中心</h3>
-                  <fieldset disabled>
-                            {% csrf_token %}
-                            {{ form.headerimg.label_tag }}
-                            <div id="avatar">
-                                {{ form.headerimg }}
+<div class="user-center-container">
+    <div class="container">
+        <div class="user-center-panel">
+            <div class="panel-heading">
+                <h2 class="text-center">
+                   欢迎{{ request.user.username }}，来到用户中心
+                </h2>
+                <p class="text-center">管理您的账户信息</p>
+            </div>
+            <div class="panel-body">
+                <!-- 页面标题 -->
+                <div class="page-header">
+                    <div class="page-title">
+                        <h3>用户信息</h3>
+                    </div>
+                </div>
+
+                <!-- 表单区域 -->
+                <form id="usercenterform">
+                    {% csrf_token %}
+
+                    <!-- 头像区域 -->
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            头像设置
+                        </h4>
+
+                        <div class="avatar-upload-area" onclick="document.querySelector('.avatar-input').click()">
+                            <div id="avatar" class="avatar-preview" style="background-image: url('{% if request.user.avatar %}/media/{{ request.user.avatar }}{% else %}{% static 'img/default.jpg' %}{% endif %}')">
                             </div>
-                      <hr>
+
+                        </div>
+
+{#                        {{ form.headerimg.label_tag }}#}
+                        <div class="avatar-input">
+                            {{ form.headerimg }}
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- 用户名区域 -->
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            账户信息
+                        </h4>
+
+                        <div class="form-group">
                             {{ form.username.label_tag }}
                             {{ form.username }}
-                      <hr>
-                  </fieldset>
-                  <a href="{% url 'users:usercenterchange' %}"><button type="button">修改</button></a>
+                        </div>
+                    </div>
 
-
-              </div>
+                    <!-- 操作按钮 -->
+                    <div style="text-align: center; margin-top: 30px;">
+                        <a href="{% url 'users:usercenterchange' %}" class="btn-edit">
+                            修改个人信息
+                        </a>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+</div>
+
+<!-- 装饰元素 -->
+<div class="decoration decoration-1"></div>
+<div class="decoration decoration-2"></div>
+{% endblock %}
+
+{% block script %}
+<script>
+    window.onload = function (){
+        let head_input = document.querySelector("#usercenterform .avatar-input input");
+        let head = document.querySelector("#avatar")
+        head_input.onchange = function (){
+            const filrReader = new FileReader()
+            filrReader.onload = function (e){
+                console.log(e.target.result)
+                head.style.backgroundImage = `url(${e.target.result})`
+            }
+            filrReader.readAsDataURL(this.files[0])
+        }
+    }
+
     {% if register_form.errors %}
-          <script>
-            // 将错误文本合并成一句
-            const errList = [
-              {% for field, errs in register_form.errors.items %}
+        // 将错误文本合并成一句
+        const errList = [
+            {% for field, errs in register_form.errors.items %}
                 {% for e in errs %}
-                  "{{ e|escapejs }}",
+                    "{{ e|escapejs }}",
                 {% endfor %}
-              {% endfor %}
-            ];
-            alert("提交失败！\n" + errList.join("\n"));
-          </script>
+            {% endfor %}
+        ];
+        alert("提交失败！\n" + errList.join("\n"));
     {% endif %}
+</script>
 {% endblock %}

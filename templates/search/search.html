@@ -1,0 +1,25 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+    搜索结果
+
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}
+
+
+{% block body %}
+    {% if query %}
+        <h3>搜索结果如下：</h3>
+        {% for result in page.object_list %}
+            <a href="#">
+                {{result.object.title}}
+            </a>
+            <br/>
+        {% empty %}
+            <p>啥也没找到</p>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

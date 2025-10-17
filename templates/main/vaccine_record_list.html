@@ -1,0 +1,599 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}
+    疫苗接种记录管理 - 宝宝成长记录
+{% endblock %}
+
+{% block style %}
+<style>
+    :root {
+        --baby-blue: #b3e0ff;
+        --baby-pink: #ffd1dc;
+        --soft-white: #fff9fb;
+        --light-gray: #f8f9fa;
+        --text-dark: #4a4a4a;
+        --accent-color: #6ec5e9;
+        --medical-green: #a8e6cf;
+        --medical-blue: #b3e0ff;
+    }
+
+    .vaccine-record-container {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        min-height: calc(100vh - 70px);
+        padding: 30px 0;
+    }
+
+    .vaccine-record-panel {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-out;
+        margin-bottom: 30px;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-heading {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        color: var(--text-dark);
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: none;
+    }
+
+    .panel-heading h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .panel-body {
+        padding: 30px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(179, 224, 255, 0.5);
+    }
+
+    .page-title h3 {
+        color: var(--text-dark);
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .btn-primary-baby {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary-baby:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+        color: white;
+    }
+
+    /* 筛选区域样式 */
+    .filter-card {
+        background-color: rgba(179, 224, 255, 0.1);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+        border-left: 4px solid var(--accent-color);
+    }
+
+    .filter-title {
+        color: var(--text-dark);
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .filter-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: var(--text-dark);
+        margin-bottom: 5px;
+    }
+
+    .form-select {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        padding: 10px 12px;
+        transition: all 0.3s ease;
+    }
+
+    .form-select:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px rgba(110, 197, 233, 0.2);
+    }
+
+    .btn-filter {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        padding: 10px;
+        transition: all 0.3s ease;
+        align-self: end;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+    }
+
+    .btn-reset {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        padding: 10px;
+        transition: all 0.3s ease;
+        align-self: end;
+        text-decoration: none;
+        text-align: center;
+    }
+
+    .btn-reset:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 154, 158, 0.4);
+        color: white;
+    }
+
+    /* 记录列表样式 */
+    .records-table-container {
+        overflow-x: auto;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        background: white;
+    }
+
+    .records-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .records-table thead {
+        background: linear-gradient(135deg, var(--medical-blue) 0%, var(--medical-green) 100%);
+    }
+
+    .records-table th {
+        padding: 15px 12px;
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-dark);
+        border-bottom: 2px solid var(--accent-color);
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    .records-table td {
+        padding: 12px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    .records-table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .records-table tbody tr:hover {
+        background-color: rgba(179, 224, 255, 0.1);
+    }
+
+    .baby-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .baby-name {
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+
+    .baby-age {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .vaccine-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .vaccine-name {
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+
+    .vaccine-dose {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .next-shot {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .next-shot.available {
+        background-color: rgba(168, 230, 207, 0.3);
+        color: #2d7a5c;
+    }
+
+    .next-shot.unavailable {
+        background-color: rgba(255, 214, 107, 0.3);
+        color: #b36b00;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+    }
+
+    .btn-view {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 15px;
+        color: white;
+        font-weight: 500;
+        padding: 6px 12px;
+        font-size: 12px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-view:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+        color: white;
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #ffd166 0%, #ffb347 100%);
+        border: none;
+        border-radius: 15px;
+        color: white;
+        font-weight: 500;
+        padding: 6px 12px;
+        font-size: 12px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 179, 71, 0.4);
+        color: white;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+        border: none;
+        border-radius: 15px;
+        color: white;
+        font-weight: 500;
+        padding: 6px 12px;
+        font-size: 12px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-delete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 154, 158, 0.4);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background-color: rgba(179, 224, 255, 0.1);
+        border-radius: 12px;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        color: var(--baby-blue);
+        margin-bottom: 20px;
+    }
+
+    .empty-state h4 {
+        color: var(--text-dark);
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .empty-state p {
+        color: #666;
+        margin-bottom: 25px;
+    }
+
+    .pagination-baby {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .pagination-baby .page-item .page-link {
+        color: var(--accent-color);
+        border: 1px solid var(--baby-blue);
+        margin: 0 3px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        padding: 8px 15px;
+    }
+
+    .pagination-baby .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border-color: var(--accent-color);
+        color: white;
+    }
+
+    .pagination-baby .page-item .page-link:hover {
+        background-color: var(--baby-blue);
+        color: var(--text-dark);
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: fixed;
+        z-index: 0;
+    }
+
+    .decoration-1 {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 209, 220, 0.3);
+        border-radius: 50%;
+        top: 20%;
+        left: 10%;
+    }
+
+    .decoration-2 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 50%;
+        bottom: 20%;
+        right: 10%;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .vaccine-record-container {
+            padding: 20px 0;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .decoration-1, .decoration-2 {
+            display: none;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .filter-form {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            gap: 5px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="vaccine-record-container">
+    <div class="container">
+        <div class="vaccine-record-panel">
+            <div class="panel-heading">
+                <h2 class="text-center">
+                    <i class="fa fa-heartbeat"></i> 疫苗接种记录
+                </h2>
+                <p class="text-center">记录每一次接种，守护宝宝健康成长</p>
+            </div>
+            <div class="panel-body">
+                <!-- 页面标题和新增按钮 -->
+                <div class="page-header">
+                    <div class="page-title">
+                        <h3>接种记录管理</h3>
+                    </div>
+                    <a href="{% url 'main:vaccine_record_form' %}" class="btn-primary-baby">
+                        <i class="fa fa-plus"></i> 新增接种记录
+                    </a>
+                </div>
+
+                <!-- 筛选区域 -->
+                <div class="filter-card">
+                    <h4 class="filter-title">
+                        <i class="fa fa-filter"></i> 筛选条件
+                    </h4>
+                    <form method="get" class="filter-form">
+                        <div class="form-group">
+                            <label for="baby" class="form-label">选择宝宝</label>
+                            <select name="baby" id="baby" class="form-select">
+                                <option value="">所有宝宝</option>
+                                {% for baby in babies %}
+                                    <option value="{{ baby.id }}" {% if request.GET.baby == baby.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ baby.name }}（{{ baby.age_in_months|default:"0"}}月龄）
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="vaccine" class="form-label">疫苗名称</label>
+                            <select name="vaccine" id="vaccine" class="form-select">
+                                <option value="">所有疫苗</option>
+                                {% for vaccine in vaccines %}
+                                    <option value="{{ vaccine.id }}" {% if request.GET.vaccine == vaccine.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ vaccine.name }}（{{ vaccine.dose }}剂）
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-filter">
+                            <i class="fa fa-search"></i> 筛选
+                        </button>
+                        <a href="{% url 'main:vaccine_record_list' %}" class="btn-reset">
+                            <i class="fa fa-refresh"></i> 重置
+                        </a>
+                    </form>
+                </div>
+
+                <!-- 记录列表 -->
+                <div class="records-table-container">
+                    {% if vaccine_records %}
+                        <table class="records-table">
+                            <thead>
+                                <tr>
+                                    <th>宝宝</th>
+                                    <th>疫苗名称</th>
+                                    <th>接种日期</th>
+                                    <th>接种点</th>
+                                    <th>下次接种</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in vaccine_records %}
+                                <tr>
+                                    <td>
+                                        <div class="baby-info">
+                                            <span class="baby-name">{{ record.baby.name }}</span>
+                                            <span class="baby-age">{{ record.baby.age_in_months }}月龄</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="vaccine-info">
+                                            <span class="vaccine-name">{{ record.vaccine.name }}</span>
+                                            <span class="vaccine-dose">{{ record.vaccine.dose }}剂</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ record.shot_date|date:"Y-m-d" }}</td>
+                                    <td>{{ record.hospital|default:"未填写" }}</td>
+                                    <td>
+                                        {% if record.next_shot_date %}
+                                            <span class="next-shot available">{{ record.next_shot_date|date:"Y-m-d" }}</span>
+                                        {% else %}
+                                            <span class="next-shot unavailable">无</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="{% url 'main:vaccine_record_detail' record.id %}" class="btn-view">
+                                                <i class="fa fa-eye"></i> 查看
+                                            </a>
+                                            <a href="" class="btn-edit">
+                                                <i class="fa fa-edit"></i> 编辑
+                                            </a>
+                                            <a href="{% url 'main:vaccine_record_confirm_delete' record.id %}" class="btn-delete" onclick="return confirm('确定要删除这条接种记录吗？')">
+                                                <i class="fa fa-trash"></i> 删除
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fa fa-heartbeat"></i>
+                            <h4>暂无接种记录</h4>
+                            <p>还没有添加任何接种记录，点击"新增接种记录"开始记录吧！</p>
+                            <a href="{% url 'main:vaccine_record_form' %}" class="btn-primary-baby">
+                                <i class="fa fa-plus"></i> 添加第一条记录
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 分页 -->
+                {% if is_paginated %}
+                    <nav class="pagination-baby">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                        <i class="fa fa-angle-double-left"></i> 首页
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                        <i class="fa fa-angle-left"></i> 上一页
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">第{{ page_obj.number }}页 / 共{{ page_obj.paginator.num_pages }}页</span>
+                            </li>
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                        下一页 <i class="fa fa-angle-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                        末页 <i class="fa fa-angle-double-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 装饰元素 -->
+<div class="decoration decoration-1"></div>
+<div class="decoration decoration-2"></div>
+{% endblock %}

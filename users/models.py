@@ -72,6 +72,9 @@ class Baby(models.Model):
     # 多对多关系，通过BabyParent中间表关联用户
     parents = models.ManyToManyField(User, through="main.BabyParent", related_name="babies")
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         """模型元数据配置"""
         verbose_name = "宝宝档案"

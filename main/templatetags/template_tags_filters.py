@@ -61,3 +61,5 @@ def liked_state(article,user):
     if bool_state:
         return True
     return False
+
+

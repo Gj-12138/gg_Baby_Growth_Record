@@ -1,46 +1,314 @@
 {% extends 'base/base.html' %}
+{% load static %}
 
 {% block title %}
-    注册
+    注册 - 宝宝成长记录
+{% endblock %}
+
+{% block style %}
+<style>
+    :root {
+        --baby-blue: #b3e0ff;
+        --baby-pink: #ffd1dc;
+        --soft-white: #fff9fb;
+        --light-gray: #f8f9fa;
+        --text-dark: #4a4a4a;
+        --accent-color: #6ec5e9;
+    }
+
+    .register-container {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        min-height: calc(100vh - 70px);
+        display: flex;
+        align-items: center;
+        padding: 30px 0;
+    }
+
+    .register-panel {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-heading {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        color: var(--text-dark);
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: none;
+    }
+
+    .panel-heading h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .panel-heading p {
+        margin-bottom: 0;
+        opacity: 0.8;
+    }
+
+    .panel-body {
+        padding: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        color: var(--text-dark);
+        font-weight: 500;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .input-group-addon {
+        background-color: var(--baby-blue);
+        border: 1px solid var(--baby-blue);
+        border-right: none;
+        color: var(--text-dark);
+    }
+
+    .form-control {
+        border-radius: 0 8px 8px 0;
+        border: 1px solid #e0e0e0;
+        padding: 12px 15px;
+        height: 46px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px rgba(110, 197, 233, 0.2);
+    }
+
+    .btn-register {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 25px;
+        color: white;
+        font-weight: 600;
+        padding: 12px;
+        margin-top: 10px;
+        transition: all 0.3s ease;
+        height: 50px;
+        font-size: 16px;
+    }
+
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+        background: linear-gradient(135deg, var(--accent-color) 0%, var(--baby-blue) 100%);
+    }
+
+    .login-link {
+        color: var(--accent-color);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .login-link:hover {
+        color: #4ca8d8;
+        text-decoration: none;
+    }
+
+    .alert {
+        border-radius: 10px;
+        border: none;
+        margin-top: 20px;
+    }
+
+    .alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .captcha-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .captcha-img {
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .captcha-img:hover {
+        transform: scale(1.05);
+    }
+
+    .captcha-refresh {
+        color: var(--accent-color);
+        cursor: pointer;
+        font-size: 18px;
+        transition: all 0.3s ease;
+    }
+
+    .captcha-refresh:hover {
+        color: #4ca8d8;
+        transform: rotate(90deg);
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: fixed;
+        z-index: 0;
+    }
+
+    .decoration-1 {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 209, 220, 0.3);
+        border-radius: 50%;
+        top: 20%;
+        left: 10%;
+    }
+
+    .decoration-2 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 50%;
+        bottom: 20%;
+        right: 10%;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .register-container {
+            padding: 20px 0;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .decoration-1, .decoration-2 {
+            display: none;
+        }
+
+        .captcha-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block body %}
-    <div style="width: 600px">
-        <h3>注册</h3>
-        <form action="" method="post">
-            {% csrf_token %}
-            <div class="form-group">
-                {{ register_form }}
+<div class="register-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="register-panel">
+                    <div class="panel-heading">
+                        <h2 class="text-center">
+                            <i class="fa fa-child"></i> 欢迎注册宝宝成长记录
+                        </h2>
+                        <p class="text-center">加入我们，记录宝宝成长的每一个珍贵瞬间</p>
+                    </div>
+                    <div class="panel-body">
+                        <form action="" method="post" class="register-form">
+                            {% csrf_token %}
+
+                            {% for field in register_form %}
+                                <div class="form-group">
+                                    <label for="{{ field.id_for_label }}">
+                                            {{ field.label }}
+                                    </label>
+
+                                    {% if field.name == 'captcha' %}
+                                        <div class="captcha-container">
+                                            {{ field }}
+                                        </div>
+                                    {% else %}
+                                        <div class="input-group">
+                                            <span class="input-group-addon">
+                                            </span>
+                                            {{ field }}
+                                        </div>
+                                    {% endif %}
+
+
+{#                                    {% if field.help_text %}#}
+{#                                        <small class="form-text text-muted">{{ field.help_text }}</small>#}
+{#                                    {% endif %}#}
+                                </div>
+                            {% endfor %}
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-register btn-block">
+                                     注册
+                                </button>
+                            </div>
+
+                            <div class="form-group text-center">
+                                <p>已有账号？
+                                    <a href="{% url 'users:login' %}" class="login-link">
+                                         立即登录
+                                    </a>
+                                </p>
+                            </div>
+                        </form>
+
+                        {% if register_form.errors %}
+                        <div class="alert alert-warning alert-dismissible fade in" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            <h4> 注册失败</h4>
+                            <ul>
+                                {% for field, errors in register_form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
-
-            <button type="submit">注册</button>
-            <a href="{% url 'users:login' %}"><button type="button">登录</button></a>
-        </form>
+        </div>
     </div>
-    {% if register_form.errors %}
-          <script>
-            // 将错误文本合并成一句
-            const errList = [
-              {% for field, errs in register_form.errors.items %}
-                {% for e in errs %}
-                  "{{ e|escapejs }}",
-                {% endfor %}
-              {% endfor %}
-            ];
-            alert("提交失败！\n" + errList.join("\n"));
-          </script>
-    {% endif %}
+</div>
 
-
+<!-- 装饰元素 -->
+<div class="decoration decoration-1"></div>
+<div class="decoration decoration-2"></div>
 {% endblock %}
+
 {% block script %}
-   <script>
-   $('.captcha').click(function () {
-        $.getJSON("/captcha/refresh/", function (result) {
-            $('.captcha').attr('src', result['image_url']);
-            $('#id_captcha_0').val(result['key'])
+<script>
+    $(document).ready(function() {
+        // 为所有输入框添加样式类
+        $('.register-form input:not([type="hidden"])').addClass('form-control');
+
+        // 验证码刷新功能
+        $('.captcha').click(function () {
+                $.getJSON("/captcha/refresh/", function (result) {
+                    $('.captcha').attr('src', result['image_url']);
+                    $('#id_captcha_0').val(result['key'])
+                });
+                });
+        // 添加输入框焦点效果
+        $('.form-control').focus(function() {
+            $(this).parent().parent().addClass('focused');
+        }).blur(function() {
+            $(this).parent().parent().removeClass('focused');
         });
     });
-   </script>
+</script>
 {% endblock %}
-

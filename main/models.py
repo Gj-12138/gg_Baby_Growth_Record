@@ -2,6 +2,7 @@ import uuid
 
 from ckeditor.fields import RichTextField
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
@@ -71,26 +72,18 @@ class Record(models.Model):
     baby = models.ForeignKey(Baby, on_delete=models.CASCADE, related_name="records")
     # 记录创建者
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    # 记录标题，可选
-    title = models.CharField(verbose_name="标题", max_length=100, blank=True)
+    # 记录标题
+    title = models.CharField(verbose_name="标题", max_length=100, blank=False,  null=False, help_text="请输入简短标题（如“宝宝第一次吃辅食”）")
     # 记录主要内容
     content = models.TextField("内容")
     # 记录分类
-    category = models.CharField(verbose_name="分类", max_length=20, choices=RECORD_CATEGORY, default="daily")
-    # 记录类型：文字或语音
-    record_type = models.CharField(verbose_name="类型", max_length=20,
-                                   choices=(("text", "文字"), ("voice", "语音")),
-                                   default="text")
+    category = models.CharField(verbose_name="分类", max_length=20, choices=RECORD_CATEGORY, default="daily",db_index=True )
     # 语音文件存储路径
-    voice = models.FileField(verbose_name="语音文件", upload_to="voice/%Y/%m", blank=True, null=True)
-    # 语音时长，单位为秒
-    voice_duration = models.PositiveIntegerField(verbose_name="语音时长(秒)", default=0)
+    voice = models.FileField(verbose_name="语音文件", upload_to="voice", blank=True, null=True)
     # 记录发生的日期
-    record_date = models.DateField(verbose_name="记录日期", default=timezone.now, db_index=True)
+    record_date = models.DateField(verbose_name="记录日期", default=timezone.now, db_index=True, help_text="记录发生的实际日期（非创建日期，便于按时间轴查看）")
     # 记录创建时间
-    created_at = models.DateTimeField(verbose_name="创建时间", default=timezone.now)
-    # 最后更新时间
-    updated_at = models.DateTimeField(verbose_name="更新时间", auto_now=True)
+    created_at = models.DateTimeField(verbose_name="创建时间", default=timezone.now,db_index=True)
 
     class Meta:
         # 默认按记录日期和创建时间倒序排列
@@ -99,8 +92,9 @@ class Record(models.Model):
         verbose_name_plural = "成长记录"
         # 数据库索引优化
         indexes = [
-            models.Index(fields=['baby', 'record_date']),  # 按宝宝和日期查询
-            models.Index(fields=['category', 'record_date']),  # 按分类和日期查询
+            models.Index(fields=['baby', "-record_date","category"]),  # 宝宝+日期+分类查询
+            # 按创建者查询（如“查看妈妈创建的所有记录”）
+            models.Index(fields=["author", "-created_at"]),
         ]
 
     def __str__(self):
@@ -118,16 +112,25 @@ class Photo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     # 关联宝宝
     baby = models.ForeignKey(Baby, on_delete=models.CASCADE, related_name="photos")
+    record = models.ForeignKey(
+        verbose_name="所属记录",
+        to=Record,
+        related_name="related_photos",  # 反向查询：记录.related_photos.all()
+        help_text="该照片属于哪条成长记录",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
     # 媒体文件存储路径
-    file = models.FileField(verbose_name="文件", upload_to="media/%Y/%m")
+    file = models.FileField(verbose_name="文件", upload_to="baby_media/")
     # 媒体类型：照片或视频
     media_type = models.CharField(verbose_name="媒体类型", max_length=10, choices=MEDIA_TYPE, default="photo")
     # 缩略图路径，用于快速预览
-    thumbnail = models.ImageField(verbose_name="缩略图", upload_to="media/thumb/%Y/%m", blank=True, null=True)
+    thumbnail = models.ImageField(verbose_name="缩略图", upload_to="baby_media_thumb/", blank=True, null=True)
     # 媒体描述
-    description = models.CharField(verbose_name="描述", max_length=200, blank=True)
+    description = models.CharField(verbose_name="描述", max_length=200, blank=True, null=True)
     # 拍摄地点
-    location = models.CharField(verbose_name="拍摄地点", max_length=200, blank=True)
+    location = models.CharField(verbose_name="拍摄地点", max_length=200, blank=True, null=True)
     # 拍摄时间
     shot_at = models.DateTimeField(verbose_name="拍摄时间", blank=True, null=True)
     # 上传者
@@ -135,6 +138,14 @@ class Photo(models.Model):
     # 上传时间
     uploaded_at = models.DateTimeField(verbose_name="上传时间", default=timezone.now)
 
+    def clean(self):
+        # 校验：如果关联了Record，必须与Record属于同一宝宝
+        if self.record and self.baby != self.record.baby:
+            raise ValidationError("照片所属宝宝必须与关联记录的宝宝一致")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # 保存前触发校验
+        super().save(*args, **kwargs)
     class Meta:
         # 默认按拍摄时间和上传时间倒序排列
         ordering = ["-shot_at", "-uploaded_at"]
@@ -185,7 +196,7 @@ class Measurement(models.Model):
     def __str__(self):
         return f"{self.baby}的测量记录: {self.measure_date}"
 
-
+# 疫苗字典
 class Vaccine(models.Model):
     """疫苗字典 - 存储国家免疫规划的疫苗标准信息"""
     # UUID主键
@@ -224,7 +235,7 @@ class Vaccine(models.Model):
         # 唯一约束，避免重复疫苗剂次
         unique_together = [("name", "dose")]
 
-
+# 宝宝实际接种记录
 class VaccineRecord(models.Model):
     """宝宝实际接种记录 - 记录宝宝的实际疫苗接种情况"""
     # UUID主键
@@ -261,7 +272,7 @@ class VaccineRecord(models.Model):
     def __str__(self):
         return f"{self.baby}接种{self.vaccine.name}: {self.shot_date}"
 
-
+# 里程碑事件类型
 class MilestoneType(models.Model):
     """里程碑事件类型 - 定义宝宝发育里程碑的分类"""
     # UUID主键
@@ -280,7 +291,7 @@ class MilestoneType(models.Model):
     def __str__(self):
         return self.name
 
-
+# 里程碑事件
 class Event(models.Model):
     """里程碑事件 - 记录宝宝的重要发育里程碑，如第一次翻身、第一次走路等"""
     # UUID主键
@@ -296,8 +307,14 @@ class Event(models.Model):
     happen_date = models.DateField(verbose_name="发生日期", db_index=True)
     # 事件详细描述
     description = models.TextField(verbose_name="详细描述", blank=True)
+
+
+    # 不去连接到photo表，直接保存url
     # 关联的照片，多对多关系
     photos = models.ManyToManyField(Photo, blank=True, related_name="events")
+
+
+
     # 事件记录者
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     # 记录创建时间
@@ -305,16 +322,26 @@ class Event(models.Model):
     # 最后更新时间
     updated_at = models.DateTimeField(verbose_name="更新时间", auto_now=True)
 
+    def clean(self):
+        # 校验：关联的照片必须与当前事件属于同一宝宝
+        for photo in self.photos.all():
+            if photo.baby != self.baby:
+                raise ValidationError(f"照片'{photo}'不属于当前宝宝，无法关联")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # 保存前触发校验
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.baby}: {self.title}({self.happen_date})"
+
     class Meta:
         # 默认按发生日期倒序排列
         ordering = ["-happen_date"]
         verbose_name = "里程碑事件"
         verbose_name_plural = "里程碑事件"
 
-    def __str__(self):
-        return f"{self.baby}: {self.title}({self.happen_date})"
-
-
+# 用药记录
 class MedicationRecord(models.Model):
     """用药记录 - 记录宝宝的用药情况"""
     # UUID主键
@@ -351,7 +378,7 @@ class MedicationRecord(models.Model):
     def __str__(self):
         return f"{self.baby}服用{self.medicine_name}: {self.administration_time.strftime('%Y-%m-%d %H:%M')}"
 
-
+# 体检记录
 class CheckupRecord(models.Model):
     """体检记录 - 记录宝宝的体检信息"""
     # UUID主键
@@ -388,7 +415,7 @@ class CheckupRecord(models.Model):
     def __str__(self):
         return f"{self.baby}的体检记录: {self.checkup_date} @ {self.institution}"
 
-
+# 文章标签
 class Tag(models.Model):
     """  标签  """
     tag = models.CharField(verbose_name="标签名",max_length=15, unique=True)
@@ -399,7 +426,7 @@ class Tag(models.Model):
     class Meta:
         verbose_name = "标签"
         verbose_name_plural = "标签"
-
+# 文章分类
 class Category(models.Model):
     """分类"""
     classification = models.CharField(verbose_name="分类名",max_length=50,unique=True)
@@ -415,7 +442,7 @@ class Category(models.Model):
     class Meta:
         verbose_name = "分类"
         verbose_name_plural = "分类"
-
+# 社区文章
 class Articles(models.Model):
     """宝宝成长的分享 || 养育经验"""
     REJECTED = -1
@@ -459,7 +486,7 @@ class Articles(models.Model):
         ordering = ["-created_articles"]
         verbose_name = "社区分享"
         verbose_name_plural = "社区分享"
-
+# 收藏
 class Collect(models.Model):
     user = models.ForeignKey(verbose_name="用户",to=User, on_delete=models.CASCADE)
     article = models.ForeignKey(verbose_name="文章",to=Articles, on_delete=models.CASCADE)
@@ -473,7 +500,7 @@ class Collect(models.Model):
         verbose_name = "收藏夹"
         verbose_name_plural = "收藏夹"
         unique_together = ("user", "article")
-
+# 点赞
 class Like(models.Model):
     user = models.ForeignKey(verbose_name="用户",to=User,on_delete=models.CASCADE)
     article = models.ForeignKey(verbose_name="文章",to=Articles,on_delete=models.CASCADE)
@@ -486,16 +513,9 @@ class Like(models.Model):
         verbose_name_plural = "点赞"
         unique_together = ("user", "article")
 
-
-
-
-# article_comment
-
-
-
+#评论 article_comment
 class ArticleComments(models.Model):
     """文章评论模型"""
-    #  用户外键：适配自定义用户模型，增加related_name便于反向查询
     user = models.ForeignKey(
         verbose_name="评论用户",
         to=settings.AUTH_USER_MODEL,
@@ -537,8 +557,11 @@ class ArticleComments(models.Model):
     is_deleted = models.BooleanField(
         verbose_name="是否软删除",
         default=False,
-        db_index=True  # 优化“筛选未删除评论”效率（如 queryset.filter(is_deleted=False)）
+        db_index=True
     )
+
+    parent = models.ForeignKey(verbose_name="父评论", to='ArticleComments', on_delete=models.CASCADE, null=True, blank=True)
+
 
     def __str__(self):
         # 显示评论摘要，增加评论ID便于定位

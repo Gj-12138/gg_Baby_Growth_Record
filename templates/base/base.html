@@ -9,8 +9,185 @@
         {% endblock %}
     </title>
     <link rel="stylesheet" href="{% static "/css/bootstrap.min.css" %}">
+<style>
+        :root {
+            --baby-blue: #b3e0ff;
+            --baby-pink: #ffd1dc;
+            --soft-white: #fff9fb;
+            --light-gray: #f8f9fa;
+            --text-dark: #4a4a4a;
+            --accent-color: #6ec5e9;
+        }
 
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--soft-white);
+        }
+
+        .navbar-baby {
+            background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+            border: none;
+            border-radius: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 0;
+            padding: 8px 0;
+        }
+
+        .navbar-baby .navbar-brand {
+            color: var(--text-dark);
+            font-weight: bold;
+            font-size: 22px;
+            padding: 15px 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-baby .navbar-brand i {
+            color: var(--accent-color);
+            margin-right: 8px;
+            font-size: 24px;
+        }
+
+        .navbar-baby .navbar-nav > li > a {
+            color: var(--text-dark);
+            font-weight: 500;
+            padding: 15px 18px;
+            transition: all 0.3s ease;
+            border-radius: 20px;
+            margin: 0 3px;
+        }
+
+        .navbar-baby .navbar-nav > li > a:hover,
+        .navbar-baby .navbar-nav > li > a:focus {
+            background-color: rgba(255, 255, 255, 0.6);
+            color: #333;
+            transform: translateY(-2px);
+        }
+
+        .navbar-baby .navbar-toggle {
+            border-color: var(--text-dark);
+        }
+
+        .navbar-baby .navbar-toggle .icon-bar {
+            background-color: var(--text-dark);
+        }
+
+        .navbar-baby .dropdown-menu {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 10px 0;
+        }
+
+        .navbar-baby .dropdown-menu > li > a {
+            padding: 8px 20px;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+        }
+
+        .navbar-baby .dropdown-menu > li > a:hover {
+            background-color: var(--baby-blue);
+            color: #333;
+        }
+
+        .navbar-form {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 0 15px;
+        }
+
+        .navbar-form .form-group {
+            position: relative;
+        }
+
+        .navbar-form .form-control {
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.7);
+            background-color: rgba(255,255,255,0.7);
+            padding: 6px 15px;
+            width: 280px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-form .form-control:focus {
+            background-color: white;
+            box-shadow: 0 0 0 2px var(--baby-blue);
+            width: 320px;
+        }
+
+        .navbar-form .btn {
+            border-radius: 20px;
+            background-color: var(--accent-color);
+            border: none;
+            color: white;
+            margin-left: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-form .btn:hover {
+            background-color: #4ca8d8;
+            transform: translateY(-2px);
+        }
+
+        .navbar-form .btn-default.btn-sm {
+            background-color: rgba(255,255,255,0.7);
+            color: var(--text-dark);
+        }
+
+        .navbar-form .btn-default.btn-sm:hover {
+            background-color: white;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .navbar-right .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+        }
+
+        .user-info {
+            margin-left: 8px;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .baby-icon {
+            color: var(--accent-color);
+            margin-right: 5px;
+        }
+
+        @media (max-width: 767px) {
+            .navbar-form .form-control {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .navbar-form .form-control:focus {
+                width: 100%;
+            }
+
+            .navbar-form .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .navbar-baby .navbar-nav > li > a {
+                border-radius: 0;
+                margin: 0;
+            }
+        }
+    </style>
     {% block style %}
+
     {% endblock %}
 </head>
 <body>

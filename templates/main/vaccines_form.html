@@ -1,0 +1,392 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}
+    {{ vaccine.name }} - 疫苗详情
+{% endblock %}
+
+{% block style %}
+<style>
+    :root {
+        --baby-blue: #b3e0ff;
+        --baby-pink: #ffd1dc;
+        --soft-white: #fff9fb;
+        --light-gray: #f8f9fa;
+        --text-dark: #4a4a4a;
+        --accent-color: #6ec5e9;
+        --medical-green: #a8e6cf;
+        --medical-blue: #b3e0ff;
+    }
+
+    .vaccine-detail-container {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        min-height: calc(100vh - 70px);
+        padding: 30px 0;
+    }
+
+    .vaccine-detail-panel {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-out;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-heading {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--baby-pink) 100%);
+        color: var(--text-dark);
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: none;
+    }
+
+    .panel-heading h2 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .panel-body {
+        padding: 30px;
+    }
+
+    .vaccine-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(179, 224, 255, 0.5);
+    }
+
+    .vaccine-title h3 {
+        color: var(--text-dark);
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .vaccine-category {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 14px;
+        font-weight: 500;
+        margin-top: 8px;
+    }
+
+    .category-class1 {
+        background-color: rgba(168, 230, 207, 0.3);
+        color: #2d7a5c;
+    }
+
+    .category-class2 {
+        background-color: rgba(255, 214, 107, 0.3);
+        color: #b36b00;
+    }
+
+    .btn-back {
+        background: linear-gradient(135deg, var(--baby-blue) 0%, var(--accent-color) 100%);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 500;
+        padding: 8px 16px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .btn-back:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(110, 197, 233, 0.4);
+        color: white;
+    }
+
+    .info-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: rgba(179, 224, 255, 0.1);
+        border-radius: 12px;
+        border-left: 4px solid var(--accent-color);
+    }
+
+    .section-title {
+        color: var(--text-dark);
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .section-title i {
+        margin-right: 10px;
+        color: var(--accent-color);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+
+    .info-value {
+        color: #555;
+        font-size: 15px;
+        line-height: 1.5;
+    }
+
+    .info-value.highlight {
+        color: var(--accent-color);
+        font-weight: 500;
+    }
+
+    .info-value.medical {
+        background-color: rgba(168, 230, 207, 0.2);
+        padding: 12px;
+        border-radius: 8px;
+        border-left: 3px solid var(--medical-green);
+    }
+
+    .info-value.warning {
+        background-color: rgba(255, 214, 107, 0.2);
+        padding: 12px;
+        border-radius: 8px;
+        border-left: 3px solid #ffb347;
+    }
+
+    .info-value.caution {
+        background-color: rgba(255, 154, 158, 0.2);
+        padding: 12px;
+        border-radius: 8px;
+        border-left: 3px solid #ff9a9e;
+    }
+
+    .age-calculation {
+        display: inline-block;
+        padding: 4px 8px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 8px;
+        font-size: 13px;
+        color: #555;
+        margin-top: 5px;
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: fixed;
+        z-index: 0;
+    }
+
+    .decoration-1 {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 209, 220, 0.3);
+        border-radius: 50%;
+        top: 20%;
+        left: 10%;
+    }
+
+    .decoration-2 {
+        width: 150px;
+        height: 150px;
+        background-color: rgba(179, 224, 255, 0.3);
+        border-radius: 50%;
+        bottom: 20%;
+        right: 10%;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .vaccine-detail-container {
+            padding: 20px 0;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .decoration-1, .decoration-2 {
+            display: none;
+        }
+
+        .vaccine-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="vaccine-detail-container">
+    <div class="container">
+        <div class="vaccine-detail-panel">
+            <div class="panel-heading">
+                <h2 class="text-center">
+                    <i class="fa fa-medkit"></i> 疫苗详情
+                </h2>
+                <p class="text-center">科学接种，为宝宝健康成长保驾护航</p>
+            </div>
+            <div class="panel-body">
+                <!-- 疫苗标题和返回按钮 -->
+                <div class="vaccine-header">
+                    <div class="vaccine-title">
+                        <h3>{{ vaccine.name }}</h3>
+                        <span class="vaccine-category {% if vaccine.category %}category-class2{% else %}category-class1{% endif %}">
+                            {{ vaccine.category|default:"一类疫苗" }}
+                        </span>
+                    </div>
+                    <a href="javascript:history.back();" class="btn-back">
+                        <i class="fa fa-arrow-left"></i> 返回列表
+                    </a>
+                </div>
+
+                <!-- 基本信息 -->
+                <div class="info-section">
+                    <h4 class="section-title">
+                        <i class="fa fa-info-circle"></i> 基本信息
+                    </h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">疫苗名称</span>
+                            <span class="info-value highlight">{{ vaccine.name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">疫苗编码</span>
+                            <span class="info-value">{{ vaccine.code|default:"未填写" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">疫苗类别</span>
+                            <span class="info-value">{{ vaccine.category|default:"一类疫苗" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">接种剂次</span>
+                            <span class="info-value highlight">{{ vaccine.dose }}剂</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 接种信息 -->
+                <div class="info-section">
+                    <h4 class="section-title">
+                        <i class="fa fa-calendar-check-o"></i> 接种计划
+                    </h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">推荐接种起始日龄</span>
+                            <span class="info-value highlight">
+                                {{ vaccine.shot_age_days_start }}天
+                                <span class="age-calculation">
+                                    (约{{ vaccine.shot_age_days_start|floatformat:"0"|default:"0" }}月龄)
+                                </span>
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">推荐接种截止日龄</span>
+                            <span class="info-value">
+                                {% if vaccine.shot_age_days_end %}
+                                    {{ vaccine.shot_age_days_end }}天
+                                    <span class="age-calculation">
+                                        (约{{ vaccine.shot_age_days_end|floatformat:"0" }}月龄)
+                                    </span>
+                                {% else %}
+                                    无截止日期
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">与上一剂间隔天数</span>
+                            <span class="info-value">
+                                {% if vaccine.interval_days %}
+                                    {{ vaccine.interval_days }}天
+                                {% else %}
+                                    无间隔要求
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 说明信息 -->
+                <div class="info-section">
+                    <h4 class="section-title">
+                        <i class="fa fa-file-text-o"></i> 疫苗说明
+                    </h4>
+                    <div class="info-grid" style="grid-template-columns: 1fr;">
+                        <div class="info-item">
+                            <span class="info-label">疫苗说明</span>
+                            <div class="info-value medical">
+                                {{ vaccine.description|default:"暂无说明"|linebreaks }}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">接种禁忌症</span>
+                            <div class="info-value caution">
+                                {{ vaccine.contraindication|default:"暂无信息"|linebreaks }}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">可能的不良反应</span>
+                            <div class="info-value warning">
+                                {{ vaccine.side_effects|default:"暂无信息"|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 装饰元素 -->
+<div class="decoration decoration-1"></div>
+<div class="decoration decoration-2"></div>
+{% endblock %}
+
+{% block script %}
+<!-- 可以添加详情页特定的交互脚本 -->
+<script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+        // 示例：平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // 为重要信息添加视觉强调
+        const importantInfo = document.querySelectorAll('.info-value.highlight');
+        importantInfo.forEach(info => {
+            info.style.fontWeight = '600';
+        });
+    });
+</script>
+{% endblock %}
